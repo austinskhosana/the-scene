@@ -355,7 +355,7 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
           y: spawnOnGround ? 0 : spawnPlatform.top - playerSize,
           velocityY: spawnOnGround ? 260 : 0,
           grounded: !spawnOnGround,
-          standingOn: spawnOnGround ? null : spawnPlatform.surface,
+          standingOn: spawnOnGround ? "ground" : platformBounds.surface,
           airborneStartedAt: time,
         });
         projectilesRef.current = [];

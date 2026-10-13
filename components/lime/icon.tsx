@@ -19,7 +19,11 @@ export {
 
 export type LimeIcon = CarbonIconType;
 
-function GamepadGlyph({size = 16, className, ...props}: React.ComponentProps<CarbonIconType>) {
+type GamepadGlyphProps = Pick<React.ComponentProps<CarbonIconType>, 'aria-hidden' | 'aria-label' | 'className' | 'role'> & {
+  size?: number | string;
+};
+
+function GamepadGlyph({size = 16, className, ...props}: GamepadGlyphProps) {
   return <SidekickGamepadIcon width={Number(size)} height={Number(size)} className={className} {...props} />;
 }
 

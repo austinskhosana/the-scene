@@ -172,7 +172,8 @@ export function ScenePlayground() {
     setRunPreviewPlaying(preview.playing);
   }, [runPreviewFrame]);
 
-  const scrubRunFrame = useCallback((values: number[]) => {
+  const scrubRunFrame = useCallback((value: number | readonly number[]) => {
+    const values = Array.isArray(value) ? value : [value];
     const nextFrame = Math.max(1, Math.min(RUN_FRAME_COUNT, Math.round(values[0] ?? 1)));
     const preview = runPreviewRef.current;
     preview.active = true;

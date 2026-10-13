@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 import "@/components/lime/styles.css";
-import { Geist } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import { cn } from "@/lib/utils";
 import { LimePortalProvider } from "@/lib/lime/portal";
 
-const geist = Geist({subsets:['latin'],variable:'--font-geist-sans'});
+const geist = GeistSans;
 
 
 export async function generateMetadata(): Promise<Metadata> {
