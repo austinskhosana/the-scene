@@ -1,0 +1,17 @@
+- main:
+  - link "The Scene":
+    - /url: /
+    - generic: The Scene
+  - link "Open tracker":
+    - /url: /dashboard
+  - region "Build the habit of replying to real people.":
+    - heading "Build the habit of replying to real people." [level=1]
+    - paragraph: The Scene helps you show up consistently on X, keep track of the replies you write yourself, and turn everyday conversations into genuine relationships. No bots or automated engagement.
+    - link "Start your streak":
+      - /url: /dashboard
+      - generic: Start your streak
+  - heading "12 day streak" [level=3]
+  - paragraph: One reply at a time, written by you.
+  - generic "Today complete"
+  - generic "Twelve completed days"
+  - paragraph: "Best streak: 37 days"

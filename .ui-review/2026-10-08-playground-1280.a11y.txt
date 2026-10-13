@@ -1,0 +1,20 @@
+- main:
+  - link "The Scene":
+    - /url: /
+    - generic: The Scene
+  - link "Back":
+    - /url: /
+    - text: Back
+  - paragraph: Character study 01
+  - heading "Movement playground" [level=1]
+  - paragraph: Tune how she feels before she enters the landing page. Use A/D or the arrow keys to move, Space to jump, and J to shoot.
+  - generic "Interactive character playground. Use left and right arrows to move, up arrow to jump, and J to shoot."
+  - generic "Movement controls":
+    - button "Move left":
+    - button "Move right":
+    - button "Jump":
+    - button "Shoot":
+      - generic: Shoot
+  - button "Reset character":
+    - generic: Reset character
+  - paragraph: This is an internal motion study. Multiplayer and landing-page integration come next, after we tune her together.

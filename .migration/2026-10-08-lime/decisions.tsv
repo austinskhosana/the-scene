@@ -1,0 +1,6 @@
+id	decision	reason
+1	Use the current main working tree without committing	The repository contains ongoing user-directed changes that must not be stashed or split without permission
+2	Run the small-app migration sequentially	One route and fewer than 3,000 lines of active UI do not warrant fan-out
+3	Keep the contribution calendar custom	Lime lists charts beyond a sparkline as a coverage gap; the graph uses only Lime role tokens and primitives
+4	Treat Today and Settings as two states of one route	The existing product exposes Settings from the shared header rather than a separate URL
+

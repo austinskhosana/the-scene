@@ -1,0 +1,3 @@
+Before migration: 14 custom component patterns across 3 surfaces; legacy stylesheet contained raw colors and dimensions throughout.
+After migration: 0 legacy component patterns or raw visual values in the touched screens.
+Done predicate met: Lime lint reports zero errors for the repository.

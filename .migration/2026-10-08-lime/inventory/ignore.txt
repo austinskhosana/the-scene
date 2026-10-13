@@ -1,0 +1,5 @@
+components/lime/**	Official Lime registry output
+.agents/**	Installed design.how skills
+.claude/**	Installed design.how skills
+.migration/**	Migration evidence and records
+

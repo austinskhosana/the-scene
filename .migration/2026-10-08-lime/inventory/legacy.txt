@@ -1,0 +1,4 @@
+app/launchpad.tsx: custom buttons, segmented control, cards, progress bars, switch, avatar, tooltips, and raw color/style tokens
+app/globals.css: legacy visual system with raw colors, custom components, custom radii, and non-Lime motion
+app/layout.tsx: missing Lime stylesheet, scope class, and portal provider
+

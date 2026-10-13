@@ -1,0 +1,200 @@
+[
+  {
+    "filename": "player-idle.png",
+    "source": "playable-character-idle-4-frame.png",
+    "frames": 4,
+    "cell": [
+      384,
+      480
+    ],
+    "sheet": [
+      1536,
+      480
+    ],
+    "anchor": [
+      192,
+      456
+    ],
+    "fps": 4,
+    "loop": true
+  },
+  {
+    "filename": "player-walk.png",
+    "source": "playable-character-walk-right-8-frame-v3.png",
+    "frames": 8,
+    "cell": [
+      384,
+      480
+    ],
+    "sheet": [
+      3072,
+      480
+    ],
+    "anchor": [
+      192,
+      456
+    ],
+    "fps": 10,
+    "loop": true
+  },
+  {
+    "filename": "player-run.png",
+    "source": "playable-character-run-right-8-frame-v2.png",
+    "frames": 8,
+    "cell": [
+      384,
+      480
+    ],
+    "sheet": [
+      3072,
+      480
+    ],
+    "anchor": [
+      192,
+      456
+    ],
+    "fps": 12,
+    "loop": true
+  },
+  {
+    "filename": "player-airborne.png",
+    "source": "playable-character-airborne-right-6-frame.png",
+    "frames": 6,
+    "cell": [
+      384,
+      512
+    ],
+    "sheet": [
+      2304,
+      512
+    ],
+    "anchor": [
+      192,
+      488
+    ],
+    "fps": 10,
+    "loop": false
+  },
+  {
+    "filename": "player-shoot.png",
+    "source": "playable-character-shoot-right-6-frame.png",
+    "frames": 6,
+    "cell": [
+      272,
+      480
+    ],
+    "sheet": [
+      1632,
+      480
+    ],
+    "anchor": [
+      136,
+      456
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  {
+    "filename": "player-airborne-shoot.png",
+    "source": "playable-character-airborne-shoot-right-4-frame.png",
+    "frames": 4,
+    "cell": [
+      384,
+      512
+    ],
+    "sheet": [
+      1536,
+      512
+    ],
+    "anchor": [
+      192,
+      488
+    ],
+    "fps": 8,
+    "loop": false
+  },
+  {
+    "filename": "energy-projectile.png",
+    "source": "energy-projectile-8-frame.png",
+    "frames": 8,
+    "cell": [
+      256,
+      256
+    ],
+    "sheet": [
+      2048,
+      256
+    ],
+    "anchor": [
+      128,
+      128
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  {
+    "filename": "ghost-float.png",
+    "source": "cyber-holographic-humanoid-float-8-frame.png",
+    "frames": 1,
+    "cell": [
+      320,
+      480
+    ],
+    "sheet": [
+      320,
+      480
+    ],
+    "anchor": [
+      160,
+      240
+    ],
+    "fps": 1,
+    "loop": true
+  },
+  {
+    "filename": "ghost-hit-dissolve.png",
+    "source": "cyber-holographic-hit-dissolve-8-frame.png",
+    "frames": 8,
+    "cell": [
+      320,
+      480
+    ],
+    "sheet": [
+      2560,
+      480
+    ],
+    "anchor": [
+      160,
+      240
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  {
+    "filename": "ghost-materialize.png",
+    "source": "cyber-holographic-materialization-10-frame.png",
+    "frames": 10,
+    "cell": [
+      320,
+      480
+    ],
+    "sheet": [
+      3200,
+      480
+    ],
+    "anchor": [
+      160,
+      240
+    ],
+    "fps": 10,
+    "loop": false
+  },
+  {
+    "filename": "ground-strip.png",
+    "source": "textured-platform-ground-strip.png",
+    "size": [
+      2048,
+      215
+    ]
+  }
+]

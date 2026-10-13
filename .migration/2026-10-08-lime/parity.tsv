@@ -1,0 +1,9 @@
+feature	before	target	verdict
+Daily replies	editable count and target	Lime card, progress, stepper, field	preserve
+Original posts	editable count and target	Lime card, progress, stepper, field	preserve
+X/LinkedIn switch	custom segmented control	Lime Segmented	preserve
+Contribution history	custom calendar and tooltip	Lime-token custom graph and Lime Tooltip	preserve
+Streak completion	inline milestone	inline Lime-token status	preserve
+Dark mode	custom variables	Lime dark token mode	preserve
+Settings	custom form controls	Lime Field, Input, Switch	preserve
+
