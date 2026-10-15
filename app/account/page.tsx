@@ -34,7 +34,7 @@ export default function AccountPage() {
 
   if (!isLoaded) {
     return (
-      <main className="mx-auto min-h-dvh w-full max-w-2xl bg-page px-4 py-8 text-fg sm:px-6">
+      <main className="mx-auto! min-h-dvh w-full max-w-3xl bg-page px-4 py-8 text-fg sm:px-6">
         <p className="text-sm text-fg-2">Loading your account…</p>
       </main>
     );
@@ -42,7 +42,7 @@ export default function AccountPage() {
 
   if (!user) {
     return (
-      <main className="mx-auto min-h-dvh w-full max-w-2xl bg-page px-4 py-8 text-fg sm:px-6">
+      <main className="mx-auto! min-h-dvh w-full max-w-3xl bg-page px-4 py-8 text-fg sm:px-6">
         <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Account</h1>
         <p className="mt-2 text-sm text-fg-2">Sign in to manage your Scene account.</p>
         <Link href="/sign-in" className={cn(buttonVariants({size: "lg"}), "mt-6")}>Sign in</Link>
@@ -76,7 +76,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-dvh bg-page text-fg">
-      <main className="mx-auto w-full max-w-2xl px-4 pb-12 sm:px-6">
+      <main className="mx-auto! w-full max-w-3xl px-4 pb-12 sm:px-6">
         <header className="sticky top-0 z-10 flex h-14 items-center gap-2 bg-page">
           <Link href="/dashboard" aria-label="Back to dashboard" className={buttonVariants({variant: "ghost", size: "icon"})}>
             <Icon icon={ArrowLeft} size={20}/>
@@ -172,14 +172,14 @@ export default function AccountPage() {
             </div>
             <Card variant="outline">
               <CardHeader>
-                <div className="flex items-start gap-3">
-                  <ListIcon icon={Locked}/>
-                  <div className="min-w-0">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Icon icon={Locked} size={20}/>
                     <CardTitle>Sign-in methods</CardTitle>
-                    <CardDescription>
-                      {user.passwordEnabled ? "Password and connected accounts are enabled." : "Your connected account is used to sign in."}
-                    </CardDescription>
                   </div>
+                  <CardDescription className="mt-1">
+                    {user.passwordEnabled ? "Password and connected accounts are enabled." : "Your connected account is used to sign in."}
+                  </CardDescription>
                 </div>
               </CardHeader>
               <CardContent className="items-start">
