@@ -69,7 +69,10 @@ body {
 }
 
 .lime .cl-modalContent:has(.cl-userProfile-root) {
-  width: min(calc(100% - var(--control-lg)), var(--overlay-lg));
+  width: min(
+    calc(100% - var(--control-lg)),
+    calc(var(--overlay-lg) + var(--overlay-sm))
+  );
   max-height: calc(100dvh - var(--control-lg));
   overflow: hidden;
   border: 1px solid var(--line);
@@ -80,14 +83,16 @@ body {
 
 .lime .cl-userProfile-root {
   width: 100%;
-  height: 100%;
+  height: auto;
+  min-height: 0;
   background: var(--raised);
   color: var(--fg);
 }
 
 .lime .cl-userProfile-root .cl-cardBox {
   width: 100%;
-  height: 100%;
+  height: auto;
+  min-height: 0;
   border: 0;
   border-radius: 0;
   background: var(--raised);
@@ -95,7 +100,12 @@ body {
 }
 
 .lime .cl-userProfile-root .cl-navbar {
-  width: calc(var(--overlay) / 2);
+  width: calc(
+    var(--control-lg) + var(--control-lg) + var(--control-lg) + var(--control-lg)
+  );
+  min-width: calc(
+    var(--control-lg) + var(--control-lg) + var(--control-lg) + var(--control-lg)
+  );
   padding: var(--control-md);
   background: var(--surface);
   border-inline-end: 1px solid var(--line);
@@ -151,6 +161,9 @@ body {
 }
 
 .lime .cl-userProfile-root .cl-pageScrollBox {
+  min-width: 0;
+  max-height: calc(100dvh - var(--control-lg));
+  overflow-y: auto;
   background: var(--raised);
 }
 
@@ -179,6 +192,11 @@ body {
 }
 
 .lime .cl-userProfile-root .cl-profileSection {
+  display: flex !important;
+  grid-template-columns: none !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: var(--control-md) !important;
   padding: var(--control-lg) 0;
   border-bottom: 1px solid var(--line);
 }
@@ -195,7 +213,9 @@ body {
 }
 
 .lime .cl-userProfile-root .cl-profileSectionContent {
-  margin-top: var(--control-md);
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
 }
 
 .lime .cl-userProfile-root .cl-profileSectionPrimaryButton,
@@ -205,7 +225,18 @@ body {
 }
 
 .lime .cl-userProfile-root .cl-profileSectionItem {
+  width: 100%;
+  min-width: 0;
+  padding-block: var(--control-sm);
   border-color: var(--line);
+}
+
+.lime .cl-userProfile-root .cl-profileSectionItemList {
+  width: 100%;
+}
+
+.lime .cl-userProfile-root .cl-footer {
+  display: none;
 }
 
 .lime .cl-userProfile-root .cl-formButtonReset,
