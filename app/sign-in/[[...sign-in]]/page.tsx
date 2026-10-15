@@ -1,19 +1,12 @@
 "use client";
 
-import { SignIn } from "@clerk/react";
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
-import { sceneAuthAppearance } from "@/components/auth/clerk-appearance";
+import { SignInForm } from "@/components/auth/sign-in-form";
 
 export default function SignInPage() {
   return (
     <AuthPageShell title="Sign in to start your streak" description="Set your reply goal and start showing up consistently on X.">
-      <SignIn
-        routing="path"
-        path="/sign-in"
-        fallbackRedirectUrl="/dashboard"
-        signUpUrl="/sign-up"
-        appearance={sceneAuthAppearance}
-      />
+      <SignInForm />
     </AuthPageShell>
   );
 }

@@ -5,10 +5,10 @@ import Link from "next/link";
 import {useClerk, useUser} from "@clerk/react";
 import {Avatar} from "@/components/lime/ui/avatar";
 import {Button, buttonVariants} from "@/components/lime/ui/button";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/lime/ui/card";
+import {Card, CardDescription, CardHeader, CardTitle} from "@/components/lime/ui/card";
 import {Field, FieldError, FieldLabel} from "@/components/lime/ui/field";
 import {Input} from "@/components/lime/ui/input";
-import {List, ListItem} from "@/components/lime/ui/list";
+import {List, ListIcon, ListItem} from "@/components/lime/ui/list";
 import {ArrowLeft, Delete, Email, Icon, Locked, LogoX, Logout, User} from "@/components/lime/icon";
 import {cn} from "@/lib/lime/utils";
 
@@ -25,6 +25,7 @@ export default function AccountPage() {
   const [pending, setPending] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function AccountPage() {
 
   if (!isLoaded) {
     return (
-      <main className="mx-auto! min-h-dvh w-full max-w-3xl bg-page px-4 py-8 text-fg sm:px-6">
+      <main className="mx-auto! min-h-dvh w-full max-w-2xl bg-page px-4 py-8 text-fg sm:px-6">
         <p className="text-sm text-fg-2">Loading your account…</p>
       </main>
     );
@@ -43,7 +44,7 @@ export default function AccountPage() {
 
   if (!user) {
     return (
-      <main className="mx-auto! min-h-dvh w-full max-w-3xl bg-page px-4 py-8 text-fg sm:px-6">
+      <main className="mx-auto! min-h-dvh w-full max-w-2xl bg-page px-4 py-8 text-fg sm:px-6">
         <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Account</h1>
         <p className="mt-2 text-sm text-fg-2">Sign in to manage your Scene account.</p>
         <Link href="/sign-in" className={cn(buttonVariants({size: "lg"}), "mt-6")}>Sign in</Link>
@@ -77,7 +78,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-dvh bg-page text-fg">
-      <main className="mx-auto! w-full max-w-2xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8">
+      <main className="mx-auto! w-full max-w-2xl px-4! pb-12! pt-4! sm:px-6! sm:pb-16! sm:pt-8!">
         <header className="flex h-14 items-center gap-2">
           <Link href="/dashboard" aria-label="Back to dashboard" className={buttonVariants({variant: "ghost", size: "icon"})}>
             <Icon icon={ArrowLeft} size={20}/>
@@ -85,8 +86,8 @@ export default function AccountPage() {
           <h1 className="text-xl font-semibold leading-tight tracking-tight sm:text-2xl">Account</h1>
         </header>
 
-        <div className="flex flex-col gap-7 pt-7">
-          <section aria-labelledby="profile-heading" className="flex flex-col gap-3">
+        <div className="flex flex-col gap-8">
+          <section aria-labelledby="profile-heading" className="mt-8! flex flex-col gap-3 sm:mt-10!">
             <div>
               <h2 id="profile-heading" className="text-lg font-semibold">Profile</h2>
               <p className="mt-1 text-sm text-fg-2">The name shown across The Scene.</p>
@@ -100,7 +101,7 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              <form onSubmit={saveProfile} className="flex max-w-md flex-col gap-4">
+              <form onSubmit={saveProfile} className="flex w-full flex-col gap-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field name="firstName">
                     <FieldLabel>First name</FieldLabel>
@@ -112,9 +113,11 @@ export default function AccountPage() {
                   </Field>
                 </div>
                 {error && <FieldError role="alert">{error}</FieldError>}
-                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-                  <Button type="submit" size="lg" pending={pending} className="w-full sm:w-auto">Save profile</Button>
-                  <p aria-live="polite" className="text-sm text-fg-2">{saved ? "Profile saved." : ""}</p>
+                <div className="flex flex-col gap-2">
+                  <Button type="submit" size="lg" pending={pending} className="w-full sm:w-auto sm:self-start">
+                    Save profile
+                  </Button>
+                  <p aria-live="polite" className="min-h-5 text-sm text-fg-2">{saved ? "Profile saved." : ""}</p>
                 </div>
               </form>
             </Card>
@@ -129,7 +132,7 @@ export default function AccountPage() {
               {user.emailAddresses.map((email) => (
                 <ListItem
                   key={email.id}
-                  leading={<Icon icon={Email} size={20}/>}
+                  leading={<ListIcon icon={Email}/>}
                   title={email.emailAddress}
                   description={email.verification.status === "verified" ? "Verified" : "Verification needed"}
                   trailing={email.id === user.primaryEmailAddressId ? <span className="text-sm text-fg-2">Primary</span> : undefined}
@@ -150,7 +153,7 @@ export default function AccountPage() {
                 return (
                   <ListItem
                     key={account.id}
-                    leading={<Icon icon={isX ? LogoX : User} size={20}/>}
+                    leading={<ListIcon icon={isX ? LogoX : User}/>}
                     title={account.providerTitle()}
                     description={identifier}
                     trailing={<span className="text-sm text-fg-2">Connected</span>}
@@ -158,7 +161,7 @@ export default function AccountPage() {
                 );
               }) : (
                 <ListItem
-                  leading={<Icon icon={LogoX} size={20}/>}
+                  leading={<ListIcon icon={LogoX}/>}
                   title="X account"
                   description="No connected X account found"
                 />
@@ -166,57 +169,60 @@ export default function AccountPage() {
             </List>
           </section>
 
-          <section aria-labelledby="security-heading" className="flex flex-col gap-3">
+          <section aria-labelledby="security-heading" className="flex flex-col gap-3 pb-8! sm:pb-12!">
             <div>
               <h2 id="security-heading" className="text-lg font-semibold">Security</h2>
               <p className="mt-1 text-sm text-fg-2">Your current sign-in setup.</p>
             </div>
-            <Card variant="surface">
+            <Card variant="surface" className="text-left">
               <CardHeader>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Icon icon={Locked} size={20}/>
-                    <CardTitle>Sign-in methods</CardTitle>
+                  <div className="flex items-start gap-2">
+                    <Icon icon={Locked} size={20} className="mt-0.5 shrink-0"/>
+                    <div className="min-w-0">
+                      <CardTitle>Sign-in methods</CardTitle>
+                      <CardDescription className="mt-1">
+                        {user.passwordEnabled ? "Password and connected accounts are enabled." : "Your connected account is used to sign in."}
+                      </CardDescription>
+                    </div>
                   </div>
-                  <CardDescription className="mt-1">
-                    {user.passwordEnabled ? "Password and connected accounts are enabled." : "Your connected account is used to sign in."}
-                  </CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="gap-5">
-                <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-medium">End your session</p>
-                    <p className="text-sm text-fg-2">Sign out on this device.</p>
-                  </div>
-                  <Button type="button" variant="outline" icon={<Icon icon={Logout} size={16}/>} onClick={() => void signOut({redirectUrl: "/sign-in"})}>
-                    Sign out
-                  </Button>
+              <div className="flex flex-col items-start gap-3 border-t border-line pt-4 text-left">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">End your session</p>
+                  <p className="text-sm text-fg-2">Sign out on this device.</p>
                 </div>
-                <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Delete account</p>
-                    <p className="text-sm text-fg-2">Permanently remove your Scene account.</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    pending={deleting}
-                    icon={<Icon icon={Delete} size={16}/>}
-                    onClick={() => {
-                      if (!window.confirm("Delete your Scene account permanently? This cannot be undone.")) return;
-                      setDeleting(true);
-                      void user.delete().then(() => signOut({redirectUrl: "/sign-in"})).catch((caught) => {
-                        setDeleting(false);
-                        setError(errorMessage(caught));
-                      });
-                    }}
-                  >
-                    Delete account
-                  </Button>
+                <Button type="button" size="sm" variant="outline" className="w-full" icon={<Icon icon={Logout} size={16}/>} onClick={() => void signOut({redirectUrl: "/sign-in"})}>
+                  Sign out
+                </Button>
+              </div>
+              <div className="flex flex-col items-start gap-3 border-t border-line pt-4 text-left">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">Delete account</p>
+                  <p className="text-sm text-fg-2">Permanently remove your Scene account.</p>
                 </div>
-                {error && <FieldError role="alert">{error}</FieldError>}
-              </CardContent>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  className="w-full"
+                  pending={deleting}
+                  icon={<Icon icon={Delete} size={16}/>}
+                  onClick={() => {
+                    if (!window.confirm("Delete your Scene account permanently? This cannot be undone.")) return;
+                    setDeleting(true);
+                    setDeleteError("");
+                    void user.delete().then(() => signOut({redirectUrl: "/sign-in"})).catch((caught) => {
+                      setDeleting(false);
+                      setDeleteError(errorMessage(caught));
+                    });
+                  }}
+                >
+                  Delete account
+                </Button>
+              </div>
+              {deleteError && <div className="border-t border-line pt-4 text-left"><FieldError role="alert">{deleteError}</FieldError></div>}
             </Card>
           </section>
         </div>
