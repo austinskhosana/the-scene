@@ -68,6 +68,35 @@ body {
   opacity: 1 !important;
 }
 
+.lime .cl-modalContent:has(.cl-userProfile-root) {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sheet);
+  background: var(--raised);
+  box-shadow: var(--shadow-overlay);
+}
+
+.lime .cl-userProfile-root {
+  width: 100%;
+  height: 100%;
+  background: var(--raised);
+  color: var(--fg);
+}
+
+.lime .cl-userProfile-root .cl-cardBox {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: var(--raised);
+  box-shadow: none;
+}
+
+.lime .cl-userProfile-root .cl-navbar {
+  background: var(--surface);
+  border-inline-end: 1px solid var(--line);
+}
+
 .lime .scene-soldier {
   image-rendering: pixelated;
 }
