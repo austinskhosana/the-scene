@@ -45,32 +45,4 @@ export const sceneUserProfileAppearance = {
     },
     borderRadius: "var(--radius-md)",
   },
-  elements: {
-    modalBackdrop: "bg-scrim!",
-    modalContent: "overflow-hidden! rounded-sheet! border! border-line! bg-raised! shadow-overlay!",
-    modalCloseButton: "rounded-control! text-fg-2! hover:bg-surface-2! hover:text-fg!",
-    rootBox: "w-full!",
-    cardBox: "w-full! border-0! bg-transparent! shadow-none!",
-    card: "w-full! border-0! bg-raised! shadow-none!",
-    navbar: "border-line! bg-surface!",
-    navbarButton: "rounded-md! text-fg-2! hover:bg-surface-2! hover:text-fg!",
-    navbarButton__active: "bg-accent-wash! text-fg!",
-    navbarButtonIcon: "text-fg-2!",
-    navbarButtonIcon__active: "text-fg!",
-    navbarButtonText: "font-medium!",
-    profilePage: "bg-raised! text-fg!",
-    profilePageContent: "text-fg!",
-    profileSection: "border-line!",
-    profileSectionHeader: "border-line!",
-    profileSectionTitleText: "font-medium! text-fg!",
-    profileSectionSubtitleText: "text-fg-2!",
-    profileSectionPrimaryButton:
-      "rounded-control! border! border-line-strong! bg-raised! text-fg! shadow-card! hover:bg-surface-2!",
-    formFieldLabel: "font-medium! text-fg!",
-    formFieldInput:
-      "rounded-field! border! border-line-strong! bg-field! text-fg! shadow-none! focus:border-control! focus:ring-ring!",
-    formButtonPrimary:
-      "glow glow-accent rounded-control! bg-accent! font-medium! text-on-accent! hover:bg-accent-hover!",
-    button: "rounded-control!",
-  },
 } as const;

@@ -18,7 +18,7 @@ body {
   margin: 0;
 }
 
-.lime .scene-social-button {
+.lime .auth-card .scene-social-button {
   overflow: hidden !important;
   border: 0 !important;
   background: var(--surface-2) !important;
@@ -26,11 +26,11 @@ body {
   box-shadow: none !important;
 }
 
-.lime .scene-social-button:hover {
+.lime .auth-card .scene-social-button:hover {
   background: var(--surface-3) !important;
 }
 
-.lime .cl-formButtonPrimary {
+.lime .auth-card .cl-formButtonPrimary {
   width: calc(100% - var(--control-sm) / 4) !important;
   margin-inline: auto !important;
   border-radius: var(--radius-control) !important;
@@ -56,14 +56,14 @@ body {
   margin-bottom: var(--control-sm) !important;
 }
 
-.lime .cl-formFieldInput:focus,
-.lime .cl-formFieldInput:focus-visible {
+.lime .auth-card .cl-formFieldInput:focus,
+.lime .auth-card .cl-formFieldInput:focus-visible {
   border-color: var(--line-strong) !important;
   box-shadow: none !important;
   outline: none !important;
 }
 
-.lime .cl-formFieldInput::placeholder {
+.lime .auth-card .cl-formFieldInput::placeholder {
   color: var(--fg-3) !important;
   opacity: 1 !important;
 }

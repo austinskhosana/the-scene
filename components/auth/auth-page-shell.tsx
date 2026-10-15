@@ -25,7 +25,7 @@ export function AuthPageShell({ title, description, children }: AuthPageShellPro
           <h1 className="auth-page-title font-pixel-square leading-tight tracking-tight">{title}</h1>
           <p className="auth-intro-description w-full max-w-xs self-center text-center text-sm leading-normal text-fg-2">{description}</p>
         </div>
-        <Card variant="surface" className="w-full">
+        <Card variant="surface" className="auth-card w-full">
           <CardContent>{children}</CardContent>
         </Card>
       </main>
