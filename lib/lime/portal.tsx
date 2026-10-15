@@ -1,6 +1,6 @@
 'use client';
 
-import {createContext, useContext, useEffect, useState, type ReactNode} from 'react';
+import {createContext, useContext, useState, type ReactNode} from 'react';
 
 // Where Lime's overlays portal to. Base UI portals to document.body by default, which sits outside the
 // .lime scope, so the tokens, the theme and the font never reach a popup. LimePortalProvider renders an
@@ -39,9 +39,6 @@ function fallbackContainer() {
 
 export function useLimePortal() {
   const scoped = useContext(LimePortalContext);
-  const [own, setOwn] = useState<HTMLElement | null>(null);
-  useEffect(() => {
-    if (scoped === undefined) setOwn(fallbackContainer());
-  }, [scoped]);
+  const [own] = useState<HTMLElement | null>(() => scoped === undefined ? fallbackContainer() : null);
   return scoped === undefined ? own : scoped;
 }

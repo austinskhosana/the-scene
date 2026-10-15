@@ -5,6 +5,7 @@ import "@/components/lime/styles.css";
 import { GeistSans } from "geist/font/sans";
 import { cn } from "@/lib/utils";
 import { LimePortalProvider } from "@/lib/lime/portal";
+import { SceneClerkProvider } from "@/components/auth/clerk-provider";
 
 const geist = GeistSans;
 
@@ -37,7 +38,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className="lime">
-        <LimePortalProvider>{children}</LimePortalProvider>
+        <SceneClerkProvider>
+          <LimePortalProvider>{children}</LimePortalProvider>
+        </SceneClerkProvider>
       </body>
     </html>
   );

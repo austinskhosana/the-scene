@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Show, UserButton } from "@clerk/react";
 import Link from "next/link";
-import { buttonVariants } from "@/components/lime/ui/button";
+import { Button, buttonVariants } from "@/components/lime/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/lime/ui/card";
 import { LandingSoldier } from "@/components/game/landing-soldier";
 import { ArrowRight, CircleDash, Icon, LogoGithub, VideoGame } from "@/components/lime/icon";
@@ -84,21 +85,26 @@ export default function Home() {
           <Icon icon={CircleDash} size={20} />
           <span>The Scene</span>
         </Link>
-        <Link
-          href="https://github.com/austinskhosana/the-scene"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Open The Scene on GitHub"
-          className={cn(buttonVariants({ variant: "solid", size: "sm" }), "shadow-card")}
-        >
-          <Icon icon={LogoGithub} size={16} />
-          <span>GitHub</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Show when="signed-in">
+            <UserButton />
+          </Show>
+          <Link
+            href="https://github.com/austinskhosana/the-scene"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Open The Scene on GitHub"
+            className={cn(buttonVariants({ variant: "solid", size: "sm" }), "shadow-card")}
+          >
+            <Icon icon={LogoGithub} size={16} />
+            <span>GitHub</span>
+          </Link>
+        </div>
       </header>
 
         <div className="relative z-10 mx-auto! flex w-full max-w-5xl translate-y-6 flex-col px-4 sm:translate-y-8 sm:px-6">
         <section aria-labelledby="landing-title" className="flex items-center justify-center py-10 text-center sm:py-16">
-          <div className="flex max-w-2xl translate-y-8 flex-col items-center gap-4 sm:translate-y-12 sm:gap-6">
+          <div className="flex max-w-2xl translate-y-12 flex-col items-center gap-4 sm:translate-y-16 sm:gap-6">
             <div className="flex flex-col items-center gap-4">
               <h1 id="landing-title" className="font-pixel-square max-w-2xl text-3xl leading-tight tracking-tight">
                 Build an X replying habit that connects you with real people.
@@ -107,14 +113,26 @@ export default function Home() {
                 The Scene helps you show up, reply with intention, and build real relationships on X, one conversation at a time. No bots or automated engagement.
               </p>
             </div>
-            <Link
-              href="/dashboard"
-              data-action-platform
-              className={buttonVariants({ variant: "primary", size: "lg" })}
-            >
-              <span>Start your streak</span>
-              <Icon icon={ArrowRight} size={16} />
-            </Link>
+            <Show when="signed-out">
+              <Link
+                href="/sign-in"
+                data-action-platform
+                className={buttonVariants({ variant: "primary", size: "lg" })}
+              >
+                <span>Start your streak</span>
+                <Icon icon={ArrowRight} size={16} />
+              </Link>
+            </Show>
+            <Show when="signed-in">
+              <Link
+                href="/dashboard"
+                data-action-platform
+                className={buttonVariants({ variant: "primary", size: "lg" })}
+              >
+                <span>Start your streak</span>
+                <Icon icon={ArrowRight} size={16} />
+              </Link>
+            </Show>
           </div>
         </section>
 
@@ -185,6 +203,13 @@ export default function Home() {
           className="landing-open-source relative isolate flex h-dvh items-center justify-center overflow-hidden px-4 py-24 text-center sm:px-6"
         >
           <div aria-hidden="true" data-ground-platform className="landing-open-source-floor pointer-events-none absolute inset-x-0 bottom-0" />
+          <Button type="button" variant="ghost" aria-label="Buy me intelligence" data-game-platform className="landing-intelligence-button absolute z-50">
+            <img
+              src="/game/the-scene/buy-me-intelligence-robot-button.png"
+              alt="Buy me intelligence"
+              className="landing-intelligence-button-image"
+            />
+          </Button>
           <>
             <LandingSoldier spawnOnGround className="absolute inset-x-0 bottom-0 z-30 h-full" />
             <div className="relative z-20 flex max-w-md flex-col items-center gap-4 text-center">
@@ -199,7 +224,7 @@ export default function Home() {
                 href="https://github.com"
                 target="_blank"
                 rel="noreferrer"
-                data-action-platform
+              data-action-platform data-game-platform
                 className={buttonVariants({ variant: "secondary", size: "md" })}
               >
                 Explore the project on GitHub

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@clerk/ui/themes/shadcn.css";
 
 @font-face {
   font-family: "Geist Pixel Square";
@@ -15,6 +16,56 @@ body {
 
 body {
   margin: 0;
+}
+
+.lime .scene-social-button {
+  overflow: hidden !important;
+  border: 0 !important;
+  background: var(--surface-2) !important;
+  border-radius: var(--radius-control) !important;
+  box-shadow: none !important;
+}
+
+.lime .scene-social-button:hover {
+  background: var(--surface-3) !important;
+}
+
+.lime .cl-formButtonPrimary {
+  width: calc(100% - var(--control-sm) / 4) !important;
+  margin-inline: auto !important;
+  border-radius: var(--radius-control) !important;
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / calc(0.75 * var(--glow-light, 1))),
+    inset 0 -1.5px 2px 0 var(--glow-edge),
+    inset 0 0 0 1px rgb(255 255 255 / calc(0.2 * var(--glow-light, 1))),
+    inset 0 0 12px 0 var(--glow-bloom),
+    0 0 0 1px rgb(var(--glow-cast) / 0.22) !important;
+}
+
+.lime .auth-logo {
+  background: var(--surface) !important;
+  width: calc(var(--control-lg) + var(--control-sm) / 4) !important;
+  height: calc(var(--control-lg) + var(--control-sm) / 4) !important;
+}
+
+.lime .auth-page-title {
+  font-size: var(--text-2xl) !important;
+}
+
+.lime .auth-intro {
+  margin-bottom: var(--control-sm) !important;
+}
+
+.lime .cl-formFieldInput:focus,
+.lime .cl-formFieldInput:focus-visible {
+  border-color: var(--line-strong) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.lime .cl-formFieldInput::placeholder {
+  color: var(--fg-3) !important;
+  opacity: 1 !important;
 }
 
 .lime .scene-soldier {
@@ -41,6 +92,29 @@ body {
 
 .lime .landing-ground-surface {
   top: calc(var(--control-lg) / 8);
+}
+
+.lime .landing-intelligence-button {
+  right: 2rem;
+  bottom: calc(var(--control-lg) * 3.45);
+  width: min(14rem, 24vw);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.lime .landing-intelligence-button-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* Any element marked data-game-platform can become level geometry. */
+.lime [data-game-platform] {
+  --game-platform: 1;
 }
 
 .lime .landing-pipe {
@@ -129,6 +203,12 @@ body {
 }
 
 @media (max-width: 639px) {
+  .lime .landing-intelligence-button {
+    right: 0.75rem;
+    bottom: calc(var(--control-lg) * 3.45);
+    width: min(9rem, 42vw);
+  }
+
   .lime .landing-pipe {
     display: none;
   }

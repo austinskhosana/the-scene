@@ -8,17 +8,13 @@ import {
   type TheSceneArtName,
 } from "@/lib/game/the-scene-art";
 import { cn } from "@/lib/lime/utils";
+import { GHOST_TRAIL_SYMBOLS, landingGameConfig } from "@/lib/game/landing-game-config";
+import { discoverGamePlatforms, type GamePlatformBounds, type GamePlatformName } from "@/lib/game/platforms";
 
 type LandingSoldierProps = { className?: string; onEnterPipe?: () => void; spawnOnGround?: boolean };
-type PlatformSurface = "streak" | "action" | "pipe";
-type Surface = PlatformSurface | "ground" | null;
+type Surface = GamePlatformName | null;
 
-type PlatformBounds = {
-  surface: PlatformSurface;
-  left: number;
-  right: number;
-  top: number;
-};
+type PlatformBounds = GamePlatformBounds;
 
 type PlayerState = {
   x: number;
@@ -65,38 +61,38 @@ type GhostTrailParticle = {
   symbol: string;
 };
 
-const MOVE_SPEED = 180;
-const MOVE_ACCELERATION = 960;
-const MOVE_DECELERATION = 1240;
-const JUMP_SPEED = 1200;
-const GRAVITY = 1500;
-const SHOOT_POSE_MS = 500;
-const SHOT_RELEASE_MS = 250;
-const SHOOT_SCALE_CORRECTION = 444 / 303;
-const SHOOT_MUZZLE_OFFSET_X = 106;
-const SHOOT_MUZZLE_OFFSET_Y = -242;
-const AIRBORNE_SHOOT_MUZZLE_OFFSET_X = 174;
-const AIRBORNE_SHOOT_MUZZLE_OFFSET_Y = -350;
-const GHOST_MATERIALIZE_MS = 1000;
-const GHOST_DATA_RING_MS = 220;
-const GHOST_DISSOLVE_MS = 680;
-const GHOST_SPAWN_MS = 6500;
-const GHOST_CHASE_SPEED = 52;
-const GHOST_STOP_DISTANCE = 82;
-const GHOST_VISIBLE_HEIGHT = 340;
-const GHOST_HOVER_AMPLITUDE = 10;
-const GHOST_BOUNDING_PADDING = 12;
-const GHOST_PLATFORM_CLEARANCE = 8;
-const GHOST_HIT_HALF_WIDTH = 64;
-const GHOST_HIT_HALF_HEIGHT = 96;
-const GHOST_TRAIL_INTERVAL_MS = 74;
-const GHOST_TRAIL_LIFETIME_MS = 920;
-const GHOST_TRAIL_SYMBOLS = ["0", "1", "+", "*", "/", "#", "@", "?"] as const;
-const PLAYER_CONTACT_INSET = 3;
-const LOWER_LEVEL_CONTACT_INSET = 7;
-const PIPE_ENTER_DURATION_MS = 650;
-const PIPE_ENTER_DEPTH = 1.05;
-const PIPE_ENTRY_CENTER_TOLERANCE = 0.22;
+const { player, shooting, pipe, ghost } = landingGameConfig;
+const MOVE_SPEED = player.moveSpeed;
+const MOVE_ACCELERATION = player.moveAcceleration;
+const MOVE_DECELERATION = player.moveDeceleration;
+const JUMP_SPEED = player.jumpSpeed;
+const GRAVITY = player.gravity;
+const SHOOT_POSE_MS = shooting.poseDurationMs;
+const SHOT_RELEASE_MS = shooting.releaseDelayMs;
+const SHOOT_SCALE_CORRECTION = shooting.scaleCorrection;
+const SHOOT_MUZZLE_OFFSET_X = shooting.muzzleOffsetX;
+const SHOOT_MUZZLE_OFFSET_Y = shooting.muzzleOffsetY;
+const AIRBORNE_SHOOT_MUZZLE_OFFSET_X = shooting.airborneMuzzleOffsetX;
+const AIRBORNE_SHOOT_MUZZLE_OFFSET_Y = shooting.airborneMuzzleOffsetY;
+const GHOST_MATERIALIZE_MS = ghost.materializeMs;
+const GHOST_DATA_RING_MS = ghost.dataRingMs;
+const GHOST_DISSOLVE_MS = ghost.dissolveMs;
+const GHOST_SPAWN_MS = ghost.spawnIntervalMs;
+const GHOST_CHASE_SPEED = ghost.chaseSpeed;
+const GHOST_STOP_DISTANCE = ghost.stopDistance;
+const GHOST_VISIBLE_HEIGHT = ghost.visibleHeight;
+const GHOST_HOVER_AMPLITUDE = ghost.hoverAmplitude;
+const GHOST_BOUNDING_PADDING = ghost.boundingPadding;
+const GHOST_PLATFORM_CLEARANCE = ghost.platformClearance;
+const GHOST_HIT_HALF_WIDTH = ghost.hitHalfWidth;
+const GHOST_HIT_HALF_HEIGHT = ghost.hitHalfHeight;
+const GHOST_TRAIL_INTERVAL_MS = ghost.trailIntervalMs;
+const GHOST_TRAIL_LIFETIME_MS = ghost.trailLifetimeMs;
+const PLAYER_CONTACT_INSET = player.contactInset;
+const LOWER_LEVEL_CONTACT_INSET = player.lowerLevelContactInset;
+const PIPE_ENTER_DURATION_MS = pipe.enterDurationMs;
+const PIPE_ENTER_DEPTH = pipe.enterDepth;
+const PIPE_ENTRY_CENTER_TOLERANCE = pipe.centerTolerance;
 
 function initialPlayerState(): PlayerState {
   return {
@@ -230,29 +226,11 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
     let nextGhostAt = previousTime + 1800;
     let accentColor = "";
     let isMobileViewport = false;
-    const streakPlatform = canvas.parentElement?.querySelector<HTMLElement>("[data-streak-platform]") ?? null;
-    const actionPlatform = canvas.parentElement?.querySelector<HTMLElement>("[data-action-platform]") ?? null;
-    const pipePlatform = canvas.parentElement?.querySelector<HTMLElement>("[data-pipe-platform]") ?? null;
-    const groundPlatform = canvas.parentElement?.querySelector<HTMLElement>("[data-ground-platform]") ?? null;
-
-    const getElementBounds = (element: HTMLElement | null) => {
-      const canvasBounds = canvas.getBoundingClientRect();
-      const bounds = element?.getBoundingClientRect();
-      if (!bounds) return { left: 0, right: logicalWidth, top: logicalHeight * 0.72 };
-      return {
-        left: bounds.left - canvasBounds.left,
-        right: bounds.right - canvasBounds.left,
-        top: bounds.top - canvasBounds.top,
-      };
-    };
-
-    const getPlayerPlatforms = (): PlatformBounds[] => {
-      const platforms: PlatformBounds[] = [];
-      if (actionPlatform) platforms.push({ surface: "action", ...getElementBounds(actionPlatform) });
-      if (streakPlatform) platforms.push({ surface: "streak", ...getElementBounds(streakPlatform) });
-      if (pipePlatform) platforms.push({ surface: "pipe", ...getElementBounds(pipePlatform) });
-      return platforms;
-    };
+    const debugEnabled = new URLSearchParams(window.location.search).get("debug") === "1";
+    // DOM elements are the level. The platform module owns browser-to-canvas coordinates.
+    const platformDiscovery = discoverGamePlatforms(canvas, logicalWidth, logicalHeight);
+    const { elements: { streak: streakPlatform, action: actionPlatform, pipe: pipePlatform, ground: groundPlatform } } = platformDiscovery;
+    let measuredPlatforms = platformDiscovery.measure();
 
     const resize = () => {
       const bounds = canvas.getBoundingClientRect();
@@ -266,6 +244,8 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
       context.imageSmoothingEnabled = false;
       const styles = getComputedStyle(canvas);
       accentColor = styles.getPropertyValue("--accent").trim() || styles.color;
+      // Platform positions only need refreshing when layout changes, not every frame.
+      measuredPlatforms = platformDiscovery.measure();
       resetRequestedRef.current = true;
     };
 
@@ -311,22 +291,25 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
     if (groundPlatform) observer.observe(groundPlatform);
     resize();
 
-    const draw = (time: number) => {
-      const delta = Math.min((time - previousTime) / 1000, 0.035);
-      previousTime = time;
-      const state = stateRef.current;
-      const playerSize = Math.min(132, Math.max(108, logicalWidth * 0.16));
+      const draw = (time: number) => {
+        const delta = Math.min((time - previousTime) / 1000, 0.035);
+        previousTime = time;
+        const state = stateRef.current;
+        // Transformed DOM platforms can settle after the canvas first measures them.
+        // Refresh before simulation so the player always lands on the visible surface.
+        measuredPlatforms = platformDiscovery.measure();
+        const playerSize = Math.min(132, Math.max(108, logicalWidth * 0.16));
       const playerScale = playerSize / 456;
       const shootScale = playerScale * SHOOT_SCALE_CORRECTION;
       const groundInset = Math.max(8, playerSize * 0.08);
+      const { platforms: playerPlatforms, ground: groundBounds } = measuredPlatforms;
       const groundTop = groundPlatform
-        ? getElementBounds(groundPlatform).top
+        ? groundBounds.top
         : logicalHeight - groundInset;
       const groundY = groundTop - playerSize + (
         spawnOnGround ? LOWER_LEVEL_CONTACT_INSET : PLAYER_CONTACT_INSET
       );
       const rightBound = Math.max(0, logicalWidth - playerSize);
-      const playerPlatforms = getPlayerPlatforms();
       const pipeBounds = playerPlatforms.find(({ surface }) => surface === "pipe");
       const pipeCenterX = pipeBounds ? (pipeBounds.left + pipeBounds.right) / 2 : 0;
       const pipeWidth = pipeBounds ? pipeBounds.right - pipeBounds.left : 0;
@@ -348,7 +331,7 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
 
       if (resetRequestedRef.current) {
         const spawnPlatform = spawnOnGround && groundPlatform
-          ? getElementBounds(groundPlatform)
+          ? groundBounds
           : platformBounds;
         Object.assign(state, initialPlayerState(), {
           x: Math.min(rightBound, spawnPlatform.left + (spawnPlatform.right - spawnPlatform.left) * 0.08),
@@ -724,6 +707,7 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
         drawSheetFrame("idle", getArtFrame(theSceneArt.idle, time), playerAnchorX, playerAnchorY, playerScale, state.facing);
       }
 
+      if (debugEnabled) canvas.dataset.debug = "1";
       canvas.dataset.playerX = state.x.toFixed(1);
       canvas.dataset.playerY = state.y.toFixed(1);
       canvas.dataset.playerSize = playerSize.toFixed(1);

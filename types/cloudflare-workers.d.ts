@@ -9,7 +9,7 @@ interface D1Database {
 declare module "cloudflare:workers" {
   /** Cloudflare bindings are provided by the runtime in worker deployments. */
   export const env: {
-    DB?: any;
+    DB?: D1Database;
     [key: string]: unknown;
   };
 }

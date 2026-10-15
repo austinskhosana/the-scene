@@ -18,16 +18,17 @@ type GoalKey = "replies" | "posts";
 type Goals = Record<GoalKey, number>;
 type Targets = Record<GoalKey, number>;
 
-const INITIAL_GOALS: Goals = { replies: 99, posts: 1 };
+const INITIAL_GOALS: Goals = { replies: 0, posts: 0 };
 const INITIAL_TARGETS: Targets = { replies: 100, posts: 1 };
 const TODAY = "2026-10-07";
+const STORAGE_KEY = "launchpad-state-v5";
 
 const goalMeta: Record<GoalKey, { label: string; singular: string }> = {
   replies: { label: "Replies", singular: "reply" },
   posts: { label: "Original posts", singular: "original post" },
 };
 
-const contributionLevelClass = ["bg-surface-3", "bg-surface-3", "bg-accent-line", "bg-accent"];
+const contributionLevelClass = ["bg-surface-3", "bg-surface-3", "bg-surface-3", "bg-accent"];
 
 function clampPercent(value: number, target: number) {
   return Math.min(100, Math.round((value / Math.max(1, target)) * 100));
@@ -45,10 +46,8 @@ function buildContributionDays(goals: Goals, targets: Targets) {
   for (let cursor = new Date(start); cursor <= end; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
     const iso = cursor.toISOString().slice(0, 10);
     const future = iso > TODAY;
-    const ordinal = Math.floor((cursor.getTime() - start.getTime()) / 86400000) + 1;
-    const wave = Math.abs(Math.sin(ordinal * 1.87) * 100);
-    let replies = future ? 0 : Math.round(24 + wave * 0.84);
-    let posts = future ? 0 : ordinal % 4 === 0 || ordinal % 9 === 0 ? 1 : 0;
+    let replies = 0;
+    let posts = 0;
 
     if (iso === TODAY) {
       replies = goals.replies;
@@ -57,9 +56,9 @@ function buildContributionDays(goals: Goals, targets: Targets) {
 
     const replyPercent = clampPercent(replies, targets.replies);
     const postPercent = clampPercent(posts, targets.posts);
-    const percentage = future ? 0 : Math.floor((replyPercent + postPercent) / 2);
-    const complete = !future && replies >= targets.replies && posts >= targets.posts;
-    const level = percentage === 0 ? 0 : percentage < 50 ? 1 : complete ? 3 : 2;
+    const percentage = Math.floor((replyPercent + postPercent) / 2);
+    const complete = replies >= targets.replies && posts >= targets.posts;
+    const level = complete ? 3 : 0;
     result.push({ iso, future, replies, posts, percentage, complete, level });
   }
 
@@ -85,10 +84,10 @@ function GoalCard({
     <Card variant="surface">
       <CardHeader className="flex-row items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1">
-          <CardTitle>{meta.label}</CardTitle>
+          <CardTitle className="font-normal">{meta.label}</CardTitle>
           <CardDescription>{percentage === 100 ? "Goal reached" : `${target - value} remaining`}</CardDescription>
         </div>
-        <p className="shrink-0 text-sm font-medium tabular-nums text-fg" aria-label={`${meta.label}: ${valueText}`}>
+        <p className="shrink-0 text-sm font-normal tabular-nums text-fg" aria-label={`${meta.label}: ${valueText}`}>
           {value} <span className="text-fg-3">/ {target}</span>
         </p>
       </CardHeader>
@@ -123,24 +122,28 @@ function ContributionDot({ level, interactive = false }: { level: number; intera
       aria-hidden="true"
       className={`relative block size-2 rounded-sm bg-surface-3 ${interactive ? "transition-[scale] duration-(--dur-instant) group-hover:scale-125 group-focus-visible:scale-125" : ""}`}
     >
-      {level > 0 && <span className={`absolute inset-0 rounded-sm ${contributionLevelClass[level]}`} />}
+      {level > 0 && (
+        <span className={`absolute inset-0 rounded-sm ${contributionLevelClass[level]}`} />
+      )}
     </span>
   );
 }
 
 function ContributionGraph({ goals, targets, streak }: { goals: Goals; targets: Targets; streak: number }) {
   const days = useMemo(() => buildContributionDays(goals, targets), [goals, targets]);
+  const completeDays = days.filter((day) => day.complete).length;
+  const totalReplies = days.reduce((total, day) => total + day.replies, 0);
 
   return (
     <section aria-labelledby="contribution-title" className="flex flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h2 id="contribution-title" className="text-lg font-semibold leading-tight">{streak} day streak</h2>
-          <p className="text-sm text-fg-3">63 complete days in 2026</p>
+          <h2 id="contribution-title" className="text-lg font-normal leading-tight">{streak} day streak</h2>
+          <p className="text-sm text-fg-3">{completeDays} complete {completeDays === 1 ? "day" : "days"} in 2026</p>
         </div>
         <div className="flex gap-5 text-end">
-          <p className="text-sm text-fg-3"><span className="block font-medium text-fg tabular-nums">37</span>Best</p>
-          <p className="text-sm text-fg-3"><span className="block font-medium text-fg tabular-nums">1,842</span>Replies</p>
+          <p className="text-sm text-fg-3"><span className="block font-normal text-fg tabular-nums">{streak}</span>Best</p>
+          <p className="text-sm text-fg-3"><span className="block font-normal text-fg tabular-nums">{totalReplies.toLocaleString()}</span>Replies</p>
         </div>
       </div>
       <Card variant="surface">
@@ -174,7 +177,9 @@ function ContributionGraph({ goals, targets, streak }: { goals: Goals; targets: 
           </div>
           <div className="flex items-center justify-end gap-1 text-xs text-fg-3" aria-hidden="true">
             <span className="me-1">Less</span>
-            {contributionLevelClass.map((_, level) => <ContributionDot key={level} level={level} />)}
+            {contributionLevelClass.map((levelClass, level) => (
+              <span key={level} className={`block size-2 rounded-sm ${levelClass}`} />
+            ))}
             <span className="ms-1">Complete</span>
           </div>
         </CardContent>
@@ -195,12 +200,12 @@ function TodayView({
   justCompleted: boolean;
 }) {
   const activeKeys: GoalKey[] = ["replies", "posts"];
-  const streak = goals.replies >= targets.replies && goals.posts >= targets.posts ? 13 : 12;
+  const streak = goals.replies >= targets.replies && goals.posts >= targets.posts ? 1 : 0;
 
   return (
     <section aria-label="Today" className="flex w-full max-w-2xl flex-col gap-7">
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="font-pixel-square text-3xl leading-tight tracking-tight">Good morning, Austin</h1>
+        <h1 className="font-pixel-square text-3xl font-normal leading-tight tracking-tight">Good morning, Austin</h1>
         <p className="text-base text-fg-2">Wednesday, October 7</p>
       </div>
 
@@ -209,10 +214,10 @@ function TodayView({
       <section aria-labelledby="goals-title" className="flex flex-col gap-3">
         <div className="flex items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h2 id="goals-title" className="text-lg font-semibold leading-tight">X goals</h2>
+            <h2 id="goals-title" className="text-lg font-normal leading-tight">X goals</h2>
             <p className="text-sm text-fg-3">Complete both to extend the streak.</p>
           </div>
-          {justCompleted && <p role="status" className="text-sm font-medium text-success-text">Today complete · {streak} day streak</p>}
+          {justCompleted && <p role="status" className="text-sm font-normal text-success-text">Today complete · {streak} day streak</p>}
         </div>
         <div className={activeKeys.length > 1 ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
           {activeKeys.map((key) => (
@@ -233,7 +238,7 @@ function TodayView({
 function GoalField({ goalKey, target, onChange }: { goalKey: GoalKey; target: number; onChange: (value: number) => void }) {
   return (
     <Field name={`${goalKey}-target`}>
-      <FieldLabel>{goalMeta[goalKey].label}</FieldLabel>
+      <FieldLabel className="font-normal">{goalMeta[goalKey].label}</FieldLabel>
       <Input
         type="number"
         inputMode="numeric"
@@ -263,7 +268,7 @@ function SettingsView({
     <section aria-labelledby="settings-title" className="flex w-full max-w-2xl flex-col gap-7">
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 id="settings-title" className="text-2xl font-semibold tracking-tight">Settings</h1>
+          <h1 id="settings-title" className="text-2xl font-normal tracking-tight">Settings</h1>
           <p className="text-sm text-fg-3">Goals save as you change them.</p>
         </div>
         <Button onClick={onDone}>Done</Button>
@@ -271,7 +276,7 @@ function SettingsView({
 
       <Card variant="surface">
         <CardHeader>
-          <h2 className="text-lg font-semibold leading-tight">Daily goals</h2>
+          <h2 className="text-lg font-normal leading-tight">Daily goals</h2>
           <CardDescription>These numbers decide whether the day extends your streak.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -284,12 +289,12 @@ function SettingsView({
 
       <Card variant="surface">
         <CardHeader>
-          <h2 className="text-lg font-semibold leading-tight">Appearance</h2>
+          <h2 className="text-lg font-normal leading-tight">Appearance</h2>
           <CardDescription>Use the same Lime system in light or dark mode.</CardDescription>
         </CardHeader>
         <CardContent>
           <label className="flex min-h-11 items-center justify-between gap-4">
-            <span className="text-sm font-medium">Dark mode</span>
+            <span className="text-sm font-normal">Dark mode</span>
             <Switch checked={dark} onCheckedChange={setDark} />
           </label>
         </CardContent>
@@ -309,13 +314,15 @@ export default function Launchpad() {
   const complete = goals.replies >= targets.replies && goals.posts >= targets.posts;
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("launchpad-state-v4");
+    const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        if (parsed.goals) setGoals(parsed.goals);
-        if (parsed.targets) setTargets(parsed.targets);
-        if (typeof parsed.dark === "boolean") setDark(parsed.dark);
+        queueMicrotask(() => {
+          if (parsed.goals) setGoals(parsed.goals);
+          if (parsed.targets) setTargets(parsed.targets);
+          if (typeof parsed.dark === "boolean") setDark(parsed.dark);
+        });
       } catch {
         // Keep the seeded local state when stored data is invalid.
       }
@@ -326,7 +333,7 @@ export default function Launchpad() {
   useEffect(() => {
     document.body.dataset.theme = dark ? "dark" : "light";
     if (hydrated.current) {
-      window.localStorage.setItem("launchpad-state-v4", JSON.stringify({ goals, targets, dark }));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ goals, targets, dark }));
     }
   }, [dark, goals, targets]);
 
@@ -346,7 +353,7 @@ export default function Launchpad() {
   return (
     <main className="flex min-h-dvh flex-col bg-page text-fg">
       <header className="flex h-16 shrink-0 items-center justify-between px-4 sm:px-6">
-        <Link href="/" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "px-2")}>
+        <Link href="/" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "px-2 font-normal")}>
           <Icon icon={CircleDash} size={20} />
           <span>The Scene</span>
         </Link>

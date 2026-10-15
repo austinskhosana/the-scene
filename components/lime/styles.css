@@ -61,7 +61,7 @@
    Specificity is one class, scoped with :where, so a utility can still beat it. The colours are the
    --glow-* tokens in tokens.css, bound per hue by glow-accent, glow-danger and glow-success. */
 :where(.lime, [data-system="lime"]) {
-  .glow {
+  .glow, .cl-formButtonPrimary.glow {
     position: relative;
     isolation: isolate;
     overflow: hidden;
