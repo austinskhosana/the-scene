@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Show } from "@clerk/react";
 import Link from "next/link";
-import { AccountMenu } from "@/components/auth/account-menu";
 import { Button, buttonVariants } from "@/components/lime/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/lime/ui/card";
 import { LandingSoldier } from "@/components/game/landing-soldier";
@@ -87,9 +86,6 @@ export default function Home() {
           <span>The Scene</span>
         </Link>
         <div className="flex items-center gap-2">
-          <Show when="signed-in">
-            <AccountMenu />
-          </Show>
           <Link
             href="https://github.com/austinskhosana/the-scene"
             target="_blank"

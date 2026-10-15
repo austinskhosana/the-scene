@@ -1,7 +1,6 @@
 'use client';
 
 import {useClerk, useUser} from '@clerk/react';
-import {useRouter} from 'next/navigation';
 import {Avatar} from '@/components/lime/ui/avatar';
 import {buttonVariants} from '@/components/lime/ui/button';
 import {
@@ -11,12 +10,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/lime/ui/dropdown-menu';
-import {ArrowRight, Icon, Logout, Settings} from '@/components/lime/icon';
+import {Icon, Logout, Settings} from '@/components/lime/icon';
 
 export function AccountMenu() {
   const {user} = useUser();
   const {openUserProfile, signOut} = useClerk();
-  const router = useRouter();
 
   if (!user) return null;
 
@@ -29,7 +27,7 @@ export function AccountMenu() {
         <Avatar size="sm" src={user.imageUrl} name={name}/>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-(--popover)">
-        <div className="flex min-w-0 items-center gap-3 px-3 py-3">
+        <div className="flex min-w-0 items-center gap-3 px-3 py-4">
           <Avatar size="md" src={user.imageUrl} name={name}/>
           <div className="min-w-0 text-start">
             <p className="truncate text-sm font-medium">{name}</p>
@@ -37,10 +35,6 @@ export function AccountMenu() {
           </div>
         </div>
         <DropdownMenuSeparator/>
-        <DropdownMenuItem onClick={() => router.push('/dashboard')}>
-          <Icon icon={ArrowRight} size={16}/>
-          <span>Go to dashboard</span>
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => openUserProfile()}>
           <Icon icon={Settings} size={16}/>
           <span>Manage account</span>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Avatar } from "@/components/lime/ui/avatar";
+import { AccountMenu } from "@/components/auth/account-menu";
 import { Button, buttonVariants } from "@/components/lime/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/lime/ui/card";
 import { Field, FieldDescription, FieldLabel } from "@/components/lime/ui/field";
@@ -375,7 +375,7 @@ export default function Launchpad() {
           >
             <Icon icon={Settings} size={16} />
           </Button>
-          <Avatar name="Austin Skhosana" size="sm" />
+          <AccountMenu />
         </div>
       </header>
 
