@@ -8,8 +8,8 @@ import {Button, buttonVariants} from "@/components/lime/ui/button";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/lime/ui/card";
 import {Field, FieldError, FieldLabel} from "@/components/lime/ui/field";
 import {Input} from "@/components/lime/ui/input";
-import {List, ListIcon, ListItem} from "@/components/lime/ui/list";
-import {ArrowLeft, Email, Icon, Locked, LogoX, Logout, User} from "@/components/lime/icon";
+import {List, ListItem} from "@/components/lime/ui/list";
+import {ArrowLeft, Delete, Email, Icon, Locked, LogoX, Logout, User} from "@/components/lime/icon";
 import {cn} from "@/lib/lime/utils";
 
 function errorMessage(error: unknown) {
@@ -23,6 +23,7 @@ export default function AccountPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [pending, setPending] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
 
@@ -76,15 +77,15 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-dvh bg-page text-fg">
-      <main className="mx-auto! w-full max-w-3xl px-4 pb-12 sm:px-6">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-2 bg-page">
+      <main className="mx-auto! w-full max-w-2xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8">
+        <header className="flex h-14 items-center gap-2">
           <Link href="/dashboard" aria-label="Back to dashboard" className={buttonVariants({variant: "ghost", size: "icon"})}>
             <Icon icon={ArrowLeft} size={20}/>
           </Link>
           <h1 className="text-xl font-semibold leading-tight tracking-tight sm:text-2xl">Account</h1>
         </header>
 
-        <div className="flex flex-col gap-8 pt-6">
+        <div className="flex flex-col gap-7 pt-7">
           <section aria-labelledby="profile-heading" className="flex flex-col gap-3">
             <div>
               <h2 id="profile-heading" className="text-lg font-semibold">Profile</h2>
@@ -128,7 +129,7 @@ export default function AccountPage() {
               {user.emailAddresses.map((email) => (
                 <ListItem
                   key={email.id}
-                  leading={<ListIcon icon={Email}/>} 
+                  leading={<Icon icon={Email} size={20}/>}
                   title={email.emailAddress}
                   description={email.verification.status === "verified" ? "Verified" : "Verification needed"}
                   trailing={email.id === user.primaryEmailAddressId ? <span className="text-sm text-fg-2">Primary</span> : undefined}
@@ -149,7 +150,7 @@ export default function AccountPage() {
                 return (
                   <ListItem
                     key={account.id}
-                    leading={<ListIcon icon={isX ? LogoX : User}/>} 
+                    leading={<Icon icon={isX ? LogoX : User} size={20}/>}
                     title={account.providerTitle()}
                     description={identifier}
                     trailing={<span className="text-sm text-fg-2">Connected</span>}
@@ -157,7 +158,7 @@ export default function AccountPage() {
                 );
               }) : (
                 <ListItem
-                  leading={<ListIcon icon={LogoX}/>} 
+                  leading={<Icon icon={LogoX} size={20}/>}
                   title="X account"
                   description="No connected X account found"
                 />
@@ -170,7 +171,7 @@ export default function AccountPage() {
               <h2 id="security-heading" className="text-lg font-semibold">Security</h2>
               <p className="mt-1 text-sm text-fg-2">Your current sign-in setup.</p>
             </div>
-            <Card variant="outline">
+            <Card variant="surface">
               <CardHeader>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -182,10 +183,39 @@ export default function AccountPage() {
                   </CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="items-start">
-                <Button type="button" variant="outline" icon={<Icon icon={Logout} size={16}/>} onClick={() => void signOut({redirectUrl: "/sign-in"})}>
-                  Sign out
-                </Button>
+              <CardContent className="gap-5">
+                <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium">End your session</p>
+                    <p className="text-sm text-fg-2">Sign out on this device.</p>
+                  </div>
+                  <Button type="button" variant="outline" icon={<Icon icon={Logout} size={16}/>} onClick={() => void signOut({redirectUrl: "/sign-in"})}>
+                    Sign out
+                  </Button>
+                </div>
+                <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Delete account</p>
+                    <p className="text-sm text-fg-2">Permanently remove your Scene account.</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    pending={deleting}
+                    icon={<Icon icon={Delete} size={16}/>}
+                    onClick={() => {
+                      if (!window.confirm("Delete your Scene account permanently? This cannot be undone.")) return;
+                      setDeleting(true);
+                      void user.delete().then(() => signOut({redirectUrl: "/sign-in"})).catch((caught) => {
+                        setDeleting(false);
+                        setError(errorMessage(caught));
+                      });
+                    }}
+                  >
+                    Delete account
+                  </Button>
+                </div>
+                {error && <FieldError role="alert">{error}</FieldError>}
               </CardContent>
             </Card>
           </section>
