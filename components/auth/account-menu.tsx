@@ -29,7 +29,7 @@ export function AccountMenu() {
         <Avatar size="sm" src={user.imageUrl} name={name}/>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-(--popover)">
-        <div className="flex min-w-0 items-center gap-3 px-3 py-2">
+        <div className="flex min-w-0 items-center gap-3 px-3 py-3">
           <Avatar size="md" src={user.imageUrl} name={name}/>
           <div className="min-w-0 text-start">
             <p className="truncate text-sm font-medium">{name}</p>
