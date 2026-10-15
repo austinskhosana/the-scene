@@ -10,7 +10,7 @@ export default function SignInPage() {
       <SignIn
         routing="path"
         path="/sign-in"
-        fallbackRedirectUrl="/onboarding"
+        fallbackRedirectUrl="/dashboard"
         signUpUrl="/sign-up"
         appearance={sceneAuthAppearance}
       />
