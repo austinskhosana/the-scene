@@ -14,7 +14,7 @@ export {
   ChevronSort, ChevronUp, Close, Copy, ErrorFilled, Image, Information, Menu, Play, Receipt, Renew, Search,
   Send, Subtract, Time, Upload, Wallet, PiggyBank, Warning, WarningFilled, ChevronLeft, ArrowLeft, Pause,
   OverflowMenuHorizontal, Folder, Star, Add as Plus, Delete, Cafe, ShoppingBag, Notification, Locked, Undo, Edit, CircleDash,
-  Settings, Moon, Sun, LogoGithub, Logout
+  Settings, Moon, Sun, LogoGithub, LogoX, Logout, Email, User
 } from '@carbon/icons-react';
 
 export type LimeIcon = CarbonIconType;

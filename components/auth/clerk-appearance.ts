@@ -23,26 +23,3 @@ export const sceneAuthAppearance = {
     footerItem: "hidden",
   },
 } as const;
-
-export const sceneUserProfileAppearance = {
-  variables: {
-    colorPrimary: "var(--accent)",
-    colorForeground: "var(--fg)",
-    colorMutedForeground: "var(--fg-2)",
-    colorBackground: "var(--raised)",
-    colorInput: "var(--field)",
-    colorInputForeground: "var(--fg)",
-    colorBorder: "var(--line)",
-    colorRing: "var(--ring)",
-    fontFamily: "var(--font-sans)",
-    fontFamilyButtons: "var(--font-sans)",
-    fontSize: "var(--text-sm)",
-    fontWeight: {
-      normal: 400,
-      medium: 500,
-      semibold: 600,
-      bold: 600,
-    },
-    borderRadius: "var(--radius-md)",
-  },
-} as const;

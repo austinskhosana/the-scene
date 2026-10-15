@@ -1,6 +1,7 @@
 'use client';
 
 import {useClerk, useUser} from '@clerk/react';
+import {useRouter} from 'next/navigation';
 import {Avatar} from '@/components/lime/ui/avatar';
 import {buttonVariants} from '@/components/lime/ui/button';
 import {
@@ -14,7 +15,8 @@ import {Icon, Logout, Settings} from '@/components/lime/icon';
 
 export function AccountMenu() {
   const {user} = useUser();
-  const {openUserProfile, signOut} = useClerk();
+  const {signOut} = useClerk();
+  const router = useRouter();
 
   if (!user) return null;
 
@@ -35,7 +37,7 @@ export function AccountMenu() {
           </div>
         </div>
         <DropdownMenuSeparator/>
-        <DropdownMenuItem onClick={() => openUserProfile()}>
+        <DropdownMenuItem onClick={() => router.push('/account')}>
           <Icon icon={Settings} size={16}/>
           <span>Manage account</span>
         </DropdownMenuItem>

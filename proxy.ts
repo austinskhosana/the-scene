@@ -5,6 +5,8 @@ export default clerkMiddleware(async (auth, request) => {
   const isProtectedRoute =
     pathname === "/dashboard" ||
     pathname.startsWith("/dashboard/") ||
+    pathname === "/account" ||
+    pathname.startsWith("/account/") ||
     pathname === "/onboarding" ||
     pathname.startsWith("/onboarding/");
 
