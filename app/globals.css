@@ -69,6 +69,8 @@ body {
 }
 
 .lime .cl-modalContent:has(.cl-userProfile-root) {
+  width: min(calc(100% - var(--control-lg)), var(--overlay-lg));
+  max-height: calc(100dvh - var(--control-lg));
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-sheet);
@@ -93,8 +95,156 @@ body {
 }
 
 .lime .cl-userProfile-root .cl-navbar {
+  width: calc(var(--overlay) / 2);
+  padding: var(--control-md);
   background: var(--surface);
   border-inline-end: 1px solid var(--line);
+}
+
+.lime .cl-userProfile-root .cl-navbar > * {
+  width: 100%;
+}
+
+.lime .cl-userProfile-root .cl-navbarHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--control-sm);
+  padding: 0 0 var(--control-md);
+  border-bottom: 1px solid var(--line);
+}
+
+.lime .cl-userProfile-root .cl-navbarTitle,
+.lime .cl-userProfile-root .cl-navbarDescription {
+  margin: 0;
+}
+
+.lime .cl-userProfile-root .cl-navbarTitle {
+  color: var(--fg);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.lime .cl-userProfile-root .cl-navbarDescription {
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+}
+
+.lime .cl-userProfile-root .cl-navbarButtons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--control-sm);
+  padding-top: var(--control-md);
+}
+
+.lime .cl-userProfile-root .cl-navbarButton {
+  min-height: var(--control-md);
+  justify-content: flex-start;
+  border-radius: var(--radius-md);
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+}
+
+.lime .cl-userProfile-root .cl-navbarButton:hover,
+.lime .cl-userProfile-root .cl-navbarButton[data-active="true"] {
+  background: var(--accent-wash);
+  color: var(--fg);
+}
+
+.lime .cl-userProfile-root .cl-pageScrollBox {
+  background: var(--raised);
+}
+
+.lime .cl-userProfile-root .cl-pageScrollBox__scrollable {
+  padding: var(--control-lg);
+}
+
+.lime .cl-userProfile-root .cl-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--control-md);
+  padding: 0 0 var(--control-lg);
+  border-bottom: 1px solid var(--line);
+}
+
+.lime .cl-userProfile-root .cl-headerTitle {
+  color: var(--fg);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+}
+
+.lime .cl-userProfile-root .cl-headerSubtitle {
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+}
+
+.lime .cl-userProfile-root .cl-profileSection {
+  padding: var(--control-lg) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.lime .cl-userProfile-root .cl-profileSectionTitle {
+  color: var(--fg);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+.lime .cl-userProfile-root .cl-profileSectionSubtitle {
+  color: var(--fg-2);
+  font-size: var(--text-sm);
+}
+
+.lime .cl-userProfile-root .cl-profileSectionContent {
+  margin-top: var(--control-md);
+}
+
+.lime .cl-userProfile-root .cl-profileSectionPrimaryButton,
+.lime .cl-userProfile-root .cl-formButtonPrimary {
+  border-radius: var(--radius-control);
+  font-weight: var(--weight-medium);
+}
+
+.lime .cl-userProfile-root .cl-profileSectionItem {
+  border-color: var(--line);
+}
+
+.lime .cl-userProfile-root .cl-formButtonReset,
+.lime .cl-userProfile-root .cl-modalCloseButton {
+  border-radius: var(--radius-control);
+  color: var(--fg-2);
+}
+
+.lime .cl-userProfile-root .cl-formButtonReset:hover,
+.lime .cl-userProfile-root .cl-modalCloseButton:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+@media (max-width: 639px) {
+  .lime .cl-modalContent:has(.cl-userProfile-root) {
+    width: calc(100% - var(--control-md));
+    max-height: calc(100dvh - var(--control-md));
+    border-radius: var(--radius-panel);
+  }
+
+  .lime .cl-userProfile-root .cl-navbar {
+    width: 100%;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lime .cl-userProfile-root .cl-navbarButtons {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .lime .cl-userProfile-root .cl-navbarButton {
+    flex: 0 0 auto;
+  }
+
+  .lime .cl-userProfile-root .cl-pageScrollBox__scrollable {
+    padding: var(--control-md);
+  }
 }
 
 .lime .scene-soldier {
