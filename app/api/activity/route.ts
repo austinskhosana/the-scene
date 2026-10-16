@@ -121,7 +121,8 @@ export async function GET(request: Request) {
   if (streakResult.error) return NextResponse.json({error: streakResult.error.message}, {status: 500});
 
   return NextResponse.json({
+    hasActivity: Boolean(activityResult.data),
     activity: activityResult.data ?? {replies_count: 0, posts_count: 0},
     streak: streakResult.data ?? {current_streak: 0, best_streak: 0},
-  });
+  }, {headers: {'cache-control': 'no-store'}});
 }

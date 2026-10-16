@@ -352,13 +352,13 @@ export default function Launchpad() {
       }
     }
     hydrated.current = true;
-    void fetch("/api/activity")
+    void fetch("/api/activity", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) return null;
-        return response.json() as Promise<{ activity?: { replies_count: number; posts_count: number } }>;
+        return response.json() as Promise<{ hasActivity?: boolean; activity?: { replies_count: number; posts_count: number } }>;
       })
       .then((result) => {
-        if (!result?.activity) return;
+        if (!result?.hasActivity || !result.activity) return;
         setGoals({ replies: result.activity.replies_count, posts: result.activity.posts_count });
       })
       .catch(() => {
