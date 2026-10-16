@@ -8,6 +8,7 @@ export function SceneClerkProvider({ children }: Readonly<{ children: React.Reac
     <ClerkProvider
       appearance={{ theme: shadcn }}
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      proxyUrl="/__clerk"
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
     >
