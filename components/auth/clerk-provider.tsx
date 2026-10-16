@@ -4,10 +4,7 @@ import { ClerkProvider } from "@clerk/react";
 import { shadcn } from "@clerk/ui/themes";
 
 export function SceneClerkProvider({ children }: Readonly<{ children: React.ReactNode }>) {
-  const proxyUrl =
-    typeof window !== "undefined" && window.location.hostname.endsWith(".vercel.app")
-      ? "/__clerk"
-      : undefined;
+  const proxyUrl = process.env.NODE_ENV === "production" ? "/__clerk" : undefined;
 
   return (
     <ClerkProvider
