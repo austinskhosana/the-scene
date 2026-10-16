@@ -181,7 +181,7 @@ function ContributionGraph({ goals, targets, streak }: { goals: Goals; targets: 
           <div className="flex justify-between text-xs text-fg-3" aria-hidden="true">
             <span>Jan</span><span>Apr</span><span>Jul</span><span>Oct</span><span>Dec</span>
           </div>
-          <div className="overflow-x-auto pb-2">
+          <div className="overflow-x-auto px-1 py-1 pb-3">
             <TooltipProvider delay={250}>
               <div className="grid min-w-max grid-flow-col grid-rows-7 gap-1" role="grid" aria-label="2026 daily distribution history">
                 {days.map((day) => {

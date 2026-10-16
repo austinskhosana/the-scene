@@ -189,7 +189,14 @@ export default function Home() {
           className="landing-open-source relative isolate flex h-dvh items-center justify-center overflow-hidden px-4 py-24 text-center sm:px-6"
         >
           <div aria-hidden="true" data-ground-platform className="landing-open-source-floor pointer-events-none absolute inset-x-0 bottom-0" />
-          <Button type="button" variant="ghost" aria-label="Buy me intelligence" data-game-platform className="landing-intelligence-button absolute z-50">
+          <Button
+            type="button"
+            variant="ghost"
+            aria-label="Buy me intelligence"
+            data-game-platform
+            className="landing-intelligence-button absolute z-50"
+            onClick={() => window.location.assign("https://austinskhosana.gumroad.com/coffee")}
+          >
             <img
               src="/game/the-scene/buy-me-intelligence-robot-button.png"
               alt="Buy me intelligence"

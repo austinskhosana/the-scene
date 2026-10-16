@@ -1,4 +1,4 @@
-import {currentUser} from '@clerk/nextjs/server';
+import {createClerkClient} from '@clerk/backend';
 import {NextResponse} from 'next/server';
 import {createSupabaseAdminClient} from '@/lib/supabase/admin';
 
@@ -10,8 +10,20 @@ type OnboardingPayload = {
 };
 
 export async function POST(request: Request) {
-  const user = await currentUser();
-  if (!user) return NextResponse.json({error: 'You must be signed in.'}, {status: 401});
+  const secretKey = process.env.CLERK_SECRET_KEY;
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  if (!secretKey || !publishableKey) {
+    return NextResponse.json({error: 'Clerk server keys are not configured.'}, {status: 500});
+  }
+
+  const clerk = createClerkClient({secretKey, publishableKey});
+  const requestState = await clerk.authenticateRequest(request, {acceptsToken: 'session_token'});
+  if (!requestState.isAuthenticated) return NextResponse.json({error: 'You must be signed in.'}, {status: 401});
+
+  const clerkUserId = requestState.toAuth().userId;
+  if (!clerkUserId) return NextResponse.json({error: 'Your Clerk session is missing a user.'}, {status: 401});
+
+  const user = await clerk.users.getUser(clerkUserId);
 
   const payload = await request.json() as Partial<OnboardingPayload>;
   if (
@@ -26,7 +38,6 @@ export async function POST(request: Request) {
   }
 
   const supabase = createSupabaseAdminClient();
-  const clerkUserId = user.id;
   const email = user.primaryEmailAddress?.emailAddress ?? null;
   const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
   const completedAt = new Date().toISOString();

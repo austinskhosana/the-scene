@@ -46,28 +46,33 @@ export function SignUpForm() {
       return;
     }
 
-    const { error } = await signUp.password({ emailAddress, password });
-    if (error) {
-      setLocalError(userMessage(error));
+    try {
+      const { error } = await signUp.password({ emailAddress, password });
+      if (error) {
+        setLocalError(userMessage(error));
+        setLocalErrorField("form");
+        return;
+      }
+
+      if (signUp.status === "complete") {
+        const { error: finalizeError } = await signUp.finalize({ navigate: navigateToOnboarding });
+        setLocalError(userMessage(finalizeError));
+        setLocalErrorField(finalizeError ? "form" : null);
+        return;
+      }
+
+      const { error: verificationError } = await signUp.verifications.sendEmailCode();
+      if (verificationError) {
+        setLocalError(userMessage(verificationError));
+        setLocalErrorField("form");
+        return;
+      }
+
+      setStep("verification");
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : "We couldn't start your account. Please try again.");
       setLocalErrorField("form");
-      return;
     }
-
-    if (signUp.status === "complete") {
-      const { error: finalizeError } = await signUp.finalize({ navigate: navigateToOnboarding });
-      setLocalError(userMessage(finalizeError));
-      setLocalErrorField(finalizeError ? "form" : null);
-      return;
-    }
-
-    const { error: verificationError } = await signUp.verifications.sendEmailCode();
-    if (verificationError) {
-      setLocalError(userMessage(verificationError));
-      setLocalErrorField("form");
-      return;
-    }
-
-    setStep("verification");
   }
 
   async function handleVerificationSubmit(event: FormEvent<HTMLFormElement>) {
@@ -75,16 +80,21 @@ export function SignUpForm() {
     setLocalError(null);
     setLocalErrorField(null);
 
-    const { error } = await signUp.verifications.verifyEmailCode({ code });
-    if (error) {
-      setLocalError(userMessage(error));
-      setLocalErrorField("form");
-      return;
-    }
+    try {
+      const { error } = await signUp.verifications.verifyEmailCode({ code });
+      if (error) {
+        setLocalError(userMessage(error));
+        setLocalErrorField("form");
+        return;
+      }
 
-    const { error: finalizeError } = await signUp.finalize({ navigate: navigateToOnboarding });
-    setLocalError(userMessage(finalizeError));
-    setLocalErrorField(finalizeError ? "form" : null);
+      const { error: finalizeError } = await signUp.finalize({ navigate: navigateToOnboarding });
+      setLocalError(userMessage(finalizeError));
+      setLocalErrorField(finalizeError ? "form" : null);
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : "We couldn't verify your email. Please try again.");
+      setLocalErrorField("form");
+    }
   }
 
   async function handleXSignUp() {
@@ -186,7 +196,7 @@ export function SignUpForm() {
           {confirmPasswordError && <FieldError match role="alert">{confirmPasswordError}</FieldError>}
         </Field>
 
-        {formError && <FieldError match role="alert">{formError}</FieldError>}
+        {formError && <p className="text-xs text-danger-text" role="alert">{formError}</p>}
         <div id="clerk-captcha" />
         <Button type="submit" size="lg" pending={pending}>Continue</Button>
       </form>

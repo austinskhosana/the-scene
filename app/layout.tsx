@@ -19,6 +19,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "The Scene — Build a human replying habit",
     description: "Track the replies you write yourself, show up consistently on X, and build genuine relationships without bots.",
+    icons: {
+      icon: "/favicon.svg",
+    },
     openGraph: {
       title: "The Scene — Build a human replying habit",
       description: "Show up consistently on X and build genuine relationships without bots.",
