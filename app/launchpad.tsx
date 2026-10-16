@@ -192,16 +192,19 @@ function TodayView({
   goals,
   targets,
   onSave,
-  justCompleted,
 }: {
   goals: Goals;
   targets: Targets;
   onSave: (goals: Goals) => Promise<void>;
-  justCompleted: boolean;
 }) {
   const [draftGoals, setDraftGoals] = useState(goals);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDraftGoals(goals);
+  }, [goals]);
+
   const activeKeys: GoalKey[] = ["replies", "posts"];
   const streak = draftGoals.replies >= targets.replies && draftGoals.posts >= targets.posts ? 1 : 0;
 
@@ -220,7 +223,6 @@ function TodayView({
             <h2 id="goals-title" className="text-lg font-normal leading-tight">X goals</h2>
             <p className="text-sm text-fg-3">Complete both to extend the streak.</p>
           </div>
-          {justCompleted && <p role="status" className="text-sm font-normal text-success-text">Today complete · {streak} day streak</p>}
         </div>
         <div className={activeKeys.length > 1 ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
           {activeKeys.map((key) => (
@@ -332,10 +334,7 @@ export default function Launchpad() {
   const [goals, setGoals] = useState<Goals>(INITIAL_GOALS);
   const [targets, setTargets] = useState<Targets>(INITIAL_TARGETS);
   const [dark, setDark] = useState(false);
-  const [justCompleted, setJustCompleted] = useState(false);
   const hydrated = useRef(false);
-  const wasComplete = useRef(false);
-  const complete = goals.replies >= targets.replies && goals.posts >= targets.posts;
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -372,16 +371,6 @@ export default function Launchpad() {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ goals, targets, dark }));
     }
   }, [dark, goals, targets]);
-
-  useEffect(() => {
-    if (complete && !wasComplete.current && hydrated.current) {
-      setJustCompleted(true);
-      const timer = window.setTimeout(() => setJustCompleted(false), 4200);
-      wasComplete.current = true;
-      return () => window.clearTimeout(timer);
-    }
-    wasComplete.current = complete;
-  }, [complete]);
 
   const saveGoals = async (nextGoals: Goals) => {
     const response = await fetch("/api/activity", {
@@ -436,7 +425,6 @@ export default function Launchpad() {
             goals={goals}
             targets={targets}
             onSave={saveGoals}
-            justCompleted={justCompleted}
           />
         ) : (
           <SettingsView
