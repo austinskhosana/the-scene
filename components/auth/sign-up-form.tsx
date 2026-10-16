@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { useSignUp } from "@clerk/react";
 import { Button } from "@/components/lime/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/lime/ui/field";
+import { Icon, LogoX } from "@/components/lime/icon";
 import { Input } from "@/components/lime/ui/input";
 
 const onboardingPath = "/onboarding";
@@ -90,7 +91,7 @@ export function SignUpForm() {
     setLocalError(null);
     setLocalErrorField(null);
     const { error } = await signUp.sso({
-      strategy: "oauth_twitter",
+      strategy: "oauth_x",
       redirectUrl: onboardingPath,
       redirectCallbackUrl: "/sso-callback",
     });
@@ -196,7 +197,7 @@ export function SignUpForm() {
         <span className="h-px flex-1 bg-line" />
       </div>
 
-      <Button type="button" variant="secondary" size="lg" onClick={handleXSignUp} disabled={pending}>
+      <Button type="button" variant="secondary" size="lg" icon={<Icon icon={LogoX} size={20}/>} onClick={handleXSignUp} disabled={pending}>
         Continue with X
       </Button>
 

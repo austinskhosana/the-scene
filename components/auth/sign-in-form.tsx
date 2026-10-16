@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { useSignIn } from "@clerk/react/legacy";
 import { Button } from "@/components/lime/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/lime/ui/field";
+import { Icon, LogoX } from "@/components/lime/icon";
 import { Input } from "@/components/lime/ui/input";
 
 function errorMessage(error: unknown) {
@@ -62,7 +63,7 @@ export function SignInForm() {
 
     try {
       await signIn.authenticateWithRedirect({
-        strategy: "oauth_twitter",
+        strategy: "oauth_x",
         redirectUrl: "/sso-callback?destination=dashboard",
         redirectUrlComplete: "/dashboard",
       });
@@ -286,7 +287,7 @@ export function SignInForm() {
         <span className="h-px flex-1 bg-line" />
       </div>
 
-      <Button type="button" variant="secondary" size="lg" onClick={handleXSignIn} disabled={pending}>
+      <Button type="button" variant="secondary" size="lg" icon={<Icon icon={LogoX} size={20}/>} onClick={handleXSignIn} disabled={pending}>
         Continue with X
       </Button>
 
