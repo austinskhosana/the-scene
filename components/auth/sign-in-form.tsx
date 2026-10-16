@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useSignIn } from "@clerk/react";
+import { useSignIn as useLegacySignIn } from "@clerk/react/legacy";
 import { Button } from "@/components/lime/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/lime/ui/field";
 import { Icon, LogoX } from "@/components/lime/icon";
@@ -19,6 +20,7 @@ function errorMessage(error: unknown) {
 
 export function SignInForm() {
   const { signIn, fetchStatus } = useSignIn();
+  const { isLoaded: isLegacySignInLoaded, signIn: legacySignIn } = useLegacySignIn();
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [resetPassword, setResetPassword] = useState("");
@@ -60,13 +62,17 @@ export function SignInForm() {
   async function handleXSignIn() {
     setError(null);
 
+    if (!isLegacySignInLoaded) {
+      setError("Sign-in is still loading. Refresh the page and try again.");
+      return;
+    }
+
     try {
-      const { error: ssoError } = await signIn.sso({
+      await legacySignIn.authenticateWithRedirect({
         strategy: "oauth_x",
-        redirectUrl: "/dashboard",
-        redirectCallbackUrl: "/sso-callback",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/dashboard",
       });
-      if (ssoError) setError(errorMessage(ssoError));
     } catch (signInError) {
       setError(errorMessage(signInError));
     }
