@@ -23,6 +23,7 @@
     "@clerk/ui": "^1.40.1",
     "@heroicons/react": "^2.2.0",
     "@sidekickicons/react": "^0.15.0",
+    "@supabase/supabase-js": "^2.118.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cn": "^0.4.0",

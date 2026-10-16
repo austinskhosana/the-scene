@@ -191,16 +191,19 @@ function ContributionGraph({ goals, targets, streak }: { goals: Goals; targets: 
 function TodayView({
   goals,
   targets,
-  setGoal,
+  onSave,
   justCompleted,
 }: {
   goals: Goals;
   targets: Targets;
-  setGoal: (key: GoalKey, value: number) => void;
+  onSave: (goals: Goals) => Promise<void>;
   justCompleted: boolean;
 }) {
+  const [draftGoals, setDraftGoals] = useState(goals);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const activeKeys: GoalKey[] = ["replies", "posts"];
-  const streak = goals.replies >= targets.replies && goals.posts >= targets.posts ? 1 : 0;
+  const streak = draftGoals.replies >= targets.replies && draftGoals.posts >= targets.posts ? 1 : 0;
 
   return (
     <section aria-label="Today" className="flex w-full max-w-2xl flex-col gap-7">
@@ -209,7 +212,7 @@ function TodayView({
         <p className="text-base text-fg-2">Wednesday, October 7</p>
       </div>
 
-      <ContributionGraph goals={goals} targets={targets} streak={streak} />
+      <ContributionGraph goals={draftGoals} targets={targets} streak={streak} />
 
       <section aria-labelledby="goals-title" className="flex flex-col gap-3">
         <div className="flex items-end justify-between gap-4">
@@ -224,11 +227,32 @@ function TodayView({
             <GoalCard
               key={key}
               goalKey={key}
-              value={goals[key]}
+              value={draftGoals[key]}
               target={targets[key]}
-              onChange={(value) => setGoal(key, value)}
+              onChange={(value) => setDraftGoals((current) => ({ ...current, [key]: value }))}
             />
           ))}
+        </div>
+        {error && <p className="text-sm text-danger-text" role="alert">{error}</p>}
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            pending={saving}
+            disabled={saving}
+            onClick={async () => {
+              setSaving(true);
+              setError(null);
+              try {
+                await onSave(draftGoals);
+              } catch (saveError) {
+                setError(saveError instanceof Error ? saveError.message : "We couldn’t save today’s activity.");
+              } finally {
+                setSaving(false);
+              }
+            }}
+          >
+            Save changes
+          </Button>
         </div>
       </section>
     </section>
@@ -328,6 +352,18 @@ export default function Launchpad() {
       }
     }
     hydrated.current = true;
+    void fetch("/api/activity")
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return response.json() as Promise<{ activity?: { replies_count: number; posts_count: number } }>;
+      })
+      .then((result) => {
+        if (!result?.activity) return;
+        setGoals({ replies: result.activity.replies_count, posts: result.activity.posts_count });
+      })
+      .catch(() => {
+        // Keep local state when the activity request is unavailable.
+      });
   }, []);
 
   useEffect(() => {
@@ -347,7 +383,22 @@ export default function Launchpad() {
     wasComplete.current = complete;
   }, [complete]);
 
-  const setGoal = (key: GoalKey, value: number) => setGoals((current) => ({ ...current, [key]: value }));
+  const saveGoals = async (nextGoals: Goals) => {
+    const response = await fetch("/api/activity", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        activityDate: TODAY,
+        repliesCount: nextGoals.replies,
+        postsCount: nextGoals.posts,
+      }),
+    });
+    if (!response.ok) {
+      const result = await response.json().catch(() => null) as { error?: string } | null;
+      throw new Error(result?.error ?? "We couldn’t save today’s activity.");
+    }
+    setGoals(nextGoals);
+  };
   const setTarget = (key: GoalKey, value: number) => setTargets((current) => ({ ...current, [key]: value }));
 
   return (
@@ -384,7 +435,7 @@ export default function Launchpad() {
           <TodayView
             goals={goals}
             targets={targets}
-            setGoal={setGoal}
+            onSave={saveGoals}
             justCompleted={justCompleted}
           />
         ) : (

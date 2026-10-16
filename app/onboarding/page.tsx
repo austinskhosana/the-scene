@@ -112,10 +112,31 @@ export default function OnboardingPage() {
   const [role, setRole] = useState("");
   const [replyTarget, setReplyTarget] = useState(10);
   const [postTarget, setPostTarget] = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const canContinue = step === 1 ? Boolean(purpose) : step === 2 ? Boolean(role) : true;
 
-  const finish = () => {
+  const finish = async () => {
+    setSaving(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ purpose, role, replyTarget, postTarget }),
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => null) as { error?: string } | null;
+        throw new Error(result?.error ?? "We couldn’t save your onboarding details.");
+      }
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "We couldn’t save your onboarding details.");
+      setSaving(false);
+      return;
+    }
+
     window.localStorage.setItem(
       DASHBOARD_STORAGE_KEY,
       JSON.stringify({
@@ -229,6 +250,8 @@ export default function OnboardingPage() {
             </section>
           )}
 
+            {error && <p className="text-sm text-danger-text" role="alert">{error}</p>}
+
             <div className="flex items-center justify-between gap-3 border-t border-line pt-5">
               {step > 1 ? (
                 <Button type="button" variant="ghost" onClick={() => setStep((current) => current - 1)}>
@@ -242,7 +265,8 @@ export default function OnboardingPage() {
                 type="button"
                 variant="primary"
                 size="lg"
-                disabled={!canContinue}
+                disabled={!canContinue || saving}
+                pending={saving}
                 onClick={() => step < TOTAL_STEPS ? setStep((current) => current + 1) : finish()}
               >
                 {step === TOTAL_STEPS ? "Start my streak" : "Continue"}
