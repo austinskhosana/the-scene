@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { useSignIn } from "@clerk/react/legacy";
+import { useSignIn } from "@clerk/react";
 import { Button } from "@/components/lime/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/lime/ui/field";
 import { Icon, LogoX } from "@/components/lime/icon";
@@ -18,7 +18,7 @@ function errorMessage(error: unknown) {
 }
 
 export function SignInForm() {
-  const { isLoaded, signIn, setActive } = useSignIn();
+  const { signIn, fetchStatus } = useSignIn();
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [resetPassword, setResetPassword] = useState("");
@@ -26,97 +26,77 @@ export function SignInForm() {
   const [resetCode, setResetCode] = useState("");
   const [step, setStep] = useState<"sign-in" | "forgot-email" | "forgot-code">("sign-in");
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const pending = fetchStatus === "fetching";
+  const navigateToDashboard = ({ decorateUrl }: { decorateUrl: (url: string) => string }) => {
+    window.location.assign(decorateUrl("/dashboard"));
+  };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isLoaded) {
-      setError("Sign-in is still loading. Refresh the page and try again.");
-      return;
-    }
-
     setError(null);
-    setPending(true);
 
     try {
-      const result = await signIn.create({
-        strategy: "password",
+      const { error: signInError } = await signIn.password({
         identifier: emailAddress,
         password,
       });
+      if (signInError) {
+        setError(errorMessage(signInError));
+        return;
+      }
 
-      if (result.status !== "complete" || !result.createdSessionId) {
+      if (signIn.status !== "complete") {
         setError("Additional verification is required to finish signing in.");
         return;
       }
 
-      await setActive({ session: result.createdSessionId, redirectUrl: "/dashboard" });
+      const { error: finalizeError } = await signIn.finalize({ navigate: navigateToDashboard });
+      if (finalizeError) setError(errorMessage(finalizeError));
     } catch (submitError) {
       setError(errorMessage(submitError));
-    } finally {
-      setPending(false);
     }
   }
 
   async function handleXSignIn() {
-    if (!isLoaded) {
-      setError("Sign-in is still loading. Refresh the page and try again.");
-      return;
-    }
-
     setError(null);
-    setPending(true);
 
     try {
-      await signIn.authenticateWithRedirect({
+      const { error: ssoError } = await signIn.sso({
         strategy: "oauth_x",
-        redirectUrl: "/sso-callback?destination=dashboard",
-        redirectUrlComplete: "/dashboard",
+        redirectUrl: "/dashboard",
+        redirectCallbackUrl: "/sso-callback?destination=dashboard",
       });
+      if (ssoError) setError(errorMessage(ssoError));
     } catch (signInError) {
       setError(errorMessage(signInError));
-      setPending(false);
     }
   }
 
   async function handleSendResetCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isLoaded) {
-      setError("Sign-in is still loading. Refresh the page and try again.");
-      return;
-    }
-
     setError(null);
-    setPending(true);
 
     try {
-      const result = await signIn.create({identifier: emailAddress});
-      const resetFactor = result.supportedFirstFactors?.find((factor) => factor.strategy === "reset_password_email_code");
-
-      if (!resetFactor || !("emailAddressId" in resetFactor)) {
-        setError("Password reset by email is not available for this account.");
+      const { error: createError } = await signIn.create({ identifier: emailAddress });
+      if (createError) {
+        setError(errorMessage(createError));
         return;
       }
 
-      await signIn.prepareFirstFactor({
-        strategy: "reset_password_email_code",
-        emailAddressId: resetFactor.emailAddressId,
-      });
+      const { error: sendCodeError } = await signIn.resetPasswordEmailCode.sendCode();
+      if (sendCodeError) {
+        setError(errorMessage(sendCodeError));
+        return;
+      }
+
       setStep("forgot-code");
     } catch (resetError) {
       setError(errorMessage(resetError));
-    } finally {
-      setPending(false);
     }
   }
 
   async function handleResetPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isLoaded) {
-      setError("Sign-in is still loading. Refresh the page and try again.");
-      return;
-    }
-
     setError(null);
     if (resetPassword.length < 15) {
       setError("Use 15 or more characters for your new password.");
@@ -127,24 +107,28 @@ export function SignInForm() {
       return;
     }
 
-    setPending(true);
     try {
-      const result = await signIn.attemptFirstFactor({
-        strategy: "reset_password_email_code",
-        code: resetCode,
-        password: resetPassword,
-      });
+      const { error: verifyCodeError } = await signIn.resetPasswordEmailCode.verifyCode({ code: resetCode });
+      if (verifyCodeError) {
+        setError(errorMessage(verifyCodeError));
+        return;
+      }
 
-      if (result.status !== "complete" || !result.createdSessionId) {
+      const { error: submitPasswordError } = await signIn.resetPasswordEmailCode.submitPassword({ password: resetPassword });
+      if (submitPasswordError) {
+        setError(errorMessage(submitPasswordError));
+        return;
+      }
+
+      if (signIn.status !== "complete") {
         setError("Additional verification is required to finish resetting your password.");
         return;
       }
 
-      await setActive({session: result.createdSessionId, redirectUrl: "/dashboard"});
+      const { error: finalizeError } = await signIn.finalize({ navigate: navigateToDashboard });
+      if (finalizeError) setError(errorMessage(finalizeError));
     } catch (resetError) {
       setError(errorMessage(resetError));
-    } finally {
-      setPending(false);
     }
   }
 
