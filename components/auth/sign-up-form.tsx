@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useSignUp } from "@clerk/react";
 import { Button } from "@/components/lime/ui/button";
+import { Checkbox } from "@/components/lime/ui/checkbox";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/lime/ui/field";
-import { Icon, LogoX } from "@/components/lime/icon";
 import { Input } from "@/components/lime/ui/input";
+import { createMarketingConsentMetadata } from "@/lib/marketing/consent";
 
 const onboardingPath = "/onboarding";
 
@@ -19,6 +20,7 @@ export function SignUpForm() {
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"details" | "verification">("details");
   const [localError, setLocalError] = useState<string | null>(null);
@@ -47,7 +49,13 @@ export function SignUpForm() {
     }
 
     try {
-      const { error } = await signUp.password({ emailAddress, password });
+      const { error } = await signUp.password({
+        emailAddress,
+        password,
+        unsafeMetadata: {
+          marketingConsent: createMarketingConsentMetadata(marketingConsent),
+        },
+      });
       if (error) {
         setLocalError(userMessage(error));
         setLocalErrorField("form");
@@ -95,18 +103,6 @@ export function SignUpForm() {
       setLocalError(error instanceof Error ? error.message : "We couldn't verify your email. Please try again.");
       setLocalErrorField("form");
     }
-  }
-
-  async function handleXSignUp() {
-    setLocalError(null);
-    setLocalErrorField(null);
-    const { error } = await signUp.sso({
-      strategy: "oauth_x",
-      redirectUrl: onboardingPath,
-      redirectCallbackUrl: "/sso-callback",
-    });
-    setLocalError(userMessage(error));
-    setLocalErrorField(error ? "form" : null);
   }
 
   if (step === "verification") {
@@ -196,20 +192,25 @@ export function SignUpForm() {
           {confirmPasswordError && <FieldError match role="alert">{confirmPasswordError}</FieldError>}
         </Field>
 
+        <Field name="marketingConsent">
+          <label className="flex cursor-pointer items-start gap-3! text-sm text-fg">
+            <Checkbox
+              checked={marketingConsent}
+              onCheckedChange={setMarketingConsent}
+              aria-labelledby="marketing-consent-label"
+              aria-describedby="marketing-consent-description"
+            />
+            <span id="marketing-consent-label">Email me occasional product updates and creator resources from Austin.</span>
+          </label>
+          <FieldDescription id="marketing-consent-description" className="ms-8!">
+            Optional. Unsubscribe at any time.
+          </FieldDescription>
+        </Field>
+
         {formError && <p className="text-xs text-danger-text" role="alert">{formError}</p>}
         <div id="clerk-captcha" />
         <Button type="submit" size="lg" pending={pending}>Continue</Button>
       </form>
-
-      <div className="flex items-center gap-3!" aria-hidden="true">
-        <span className="h-px flex-1 bg-line" />
-        <span className="text-sm text-fg-2">or</span>
-        <span className="h-px flex-1 bg-line" />
-      </div>
-
-      <Button type="button" variant="secondary" size="lg" icon={<Icon icon={LogoX} size={20}/>} onClick={handleXSignUp} disabled={pending}>
-        Continue with X
-      </Button>
 
       <p className="text-center text-sm text-fg-2">
         Already have an account?{" "}

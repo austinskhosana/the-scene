@@ -1,6 +1,7 @@
 import {createClerkClient} from '@clerk/backend';
 import {NextResponse} from 'next/server';
 import {createSupabaseAdminClient} from '@/lib/supabase/admin';
+import {readMarketingConsentMetadata} from '@/lib/marketing/consent';
 
 type OnboardingPayload = {
   purpose: string;
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
   const email = user.primaryEmailAddress?.emailAddress ?? null;
   const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
   const completedAt = new Date().toISOString();
+  const marketingConsent = readMarketingConsentMetadata(user.unsafeMetadata);
 
   const profileResult = await supabase.from('profiles').upsert({
     clerk_user_id: clerkUserId,
@@ -50,6 +52,20 @@ export async function POST(request: Request) {
     updated_at: completedAt,
   }, {onConflict: 'clerk_user_id'});
   if (profileResult.error) return NextResponse.json({error: profileResult.error.message}, {status: 500});
+
+  if (marketingConsent && email) {
+    const consentResult = await supabase.from('marketing_consents').upsert({
+      clerk_user_id: clerkUserId,
+      email,
+      consented: marketingConsent.granted,
+      consented_at: marketingConsent.granted ? marketingConsent.recordedAt : null,
+      recorded_at: marketingConsent.recordedAt,
+      source: marketingConsent.source,
+      policy_version: marketingConsent.policyVersion,
+      updated_at: completedAt,
+    }, {onConflict: 'clerk_user_id'});
+    if (consentResult.error) return NextResponse.json({error: consentResult.error.message}, {status: 500});
+  }
 
   const onboardingResult = await supabase.from('onboarding_preferences').upsert({
     clerk_user_id: clerkUserId,

@@ -3,10 +3,8 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useSignIn } from "@clerk/react";
-import { useSignIn as useLegacySignIn } from "@clerk/react/legacy";
 import { Button } from "@/components/lime/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/lime/ui/field";
-import { Icon, LogoX } from "@/components/lime/icon";
 import { Input } from "@/components/lime/ui/input";
 
 function errorMessage(error: unknown) {
@@ -20,7 +18,6 @@ function errorMessage(error: unknown) {
 
 export function SignInForm() {
   const { signIn, fetchStatus } = useSignIn();
-  const { isLoaded: isLegacySignInLoaded, signIn: legacySignIn } = useLegacySignIn();
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [resetPassword, setResetPassword] = useState("");
@@ -56,25 +53,6 @@ export function SignInForm() {
       if (finalizeError) setError(errorMessage(finalizeError));
     } catch (submitError) {
       setError(errorMessage(submitError));
-    }
-  }
-
-  async function handleXSignIn() {
-    setError(null);
-
-    if (!isLegacySignInLoaded) {
-      setError("Sign-in is still loading. Refresh the page and try again.");
-      return;
-    }
-
-    try {
-      await legacySignIn.authenticateWithRedirect({
-        strategy: "oauth_x",
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/dashboard",
-      });
-    } catch (signInError) {
-      setError(errorMessage(signInError));
     }
   }
 
@@ -282,16 +260,6 @@ export function SignInForm() {
         <div id="clerk-captcha" />
         <Button type="submit" size="lg" pending={pending}>Continue</Button>
       </form>
-
-      <div className="flex items-center gap-3!" aria-hidden="true">
-        <span className="h-px flex-1 bg-line" />
-        <span className="text-sm text-fg-2">or</span>
-        <span className="h-px flex-1 bg-line" />
-      </div>
-
-      <Button type="button" variant="secondary" size="lg" icon={<Icon icon={LogoX} size={20}/>} onClick={handleXSignIn} disabled={pending}>
-        Continue with X
-      </Button>
 
       <p className="text-center text-sm text-fg-2">
         Don’t have an account?{" "}
