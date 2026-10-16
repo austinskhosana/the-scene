@@ -64,7 +64,7 @@ export function SignInForm() {
       const { error: ssoError } = await signIn.sso({
         strategy: "oauth_x",
         redirectUrl: "/dashboard",
-        redirectCallbackUrl: "/sso-callback?destination=dashboard",
+        redirectCallbackUrl: "/sso-callback",
       });
       if (ssoError) setError(errorMessage(ssoError));
     } catch (signInError) {
