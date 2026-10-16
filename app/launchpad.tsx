@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import confetti from "canvas-confetti";
 import { AccountMenu } from "@/components/auth/account-menu";
 import { Button, buttonVariants } from "@/components/lime/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/lime/ui/card";
@@ -36,6 +37,35 @@ function clampPercent(value: number, target: number) {
 
 function dateLabel(iso: string) {
   return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${iso}T12:00:00Z`));
+}
+
+function celebrateDailyStreak() {
+  const limeRoot = document.querySelector<HTMLElement>(".lime");
+  const accent = getComputedStyle(limeRoot ?? document.documentElement).getPropertyValue("--accent").trim();
+  if (!accent) return;
+
+  const end = Date.now() + 3_000;
+  const frame = () => {
+    if (Date.now() > end) return;
+    confetti({
+      particleCount: 3,
+      angle: 60,
+      spread: 55,
+      startVelocity: 60,
+      origin: { x: 0, y: 0.65 },
+      colors: [accent],
+    });
+    confetti({
+      particleCount: 3,
+      angle: 120,
+      spread: 55,
+      startVelocity: 60,
+      origin: { x: 1, y: 0.65 },
+      colors: [accent],
+    });
+    requestAnimationFrame(frame);
+  };
+  frame();
 }
 
 function buildContributionDays(goals: Goals, targets: Targets) {
@@ -231,7 +261,13 @@ function TodayView({
               goalKey={key}
               value={draftGoals[key]}
               target={targets[key]}
-              onChange={(value) => setDraftGoals((current) => ({ ...current, [key]: value }))}
+              onChange={(value) => {
+                const nextGoals = { ...draftGoals, [key]: value };
+                const wasComplete = draftGoals.replies >= targets.replies && draftGoals.posts >= targets.posts;
+                const isComplete = nextGoals.replies >= targets.replies && nextGoals.posts >= targets.posts;
+                setDraftGoals(nextGoals);
+                if (!wasComplete && isComplete) celebrateDailyStreak();
+              }}
             />
           ))}
         </div>

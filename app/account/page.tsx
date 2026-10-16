@@ -193,7 +193,7 @@ export default function AccountPage() {
                   <p className="text-sm font-medium">End your session</p>
                   <p className="text-sm text-fg-2">Sign out on this device.</p>
                 </div>
-                <Button type="button" size="sm" variant="outline" className="w-full" icon={<Icon icon={Logout} size={16}/>} onClick={() => void signOut({redirectUrl: "/sign-in"})}>
+                <Button type="button" size="sm" variant="outline" className="w-full" icon={<Icon icon={Logout} size={16}/>} onClick={() => void signOut({redirectUrl: "/"})}>
                   Sign out
                 </Button>
               </div>
@@ -213,7 +213,7 @@ export default function AccountPage() {
                     if (!window.confirm("Delete your Scene account permanently? This cannot be undone.")) return;
                     setDeleting(true);
                     setDeleteError("");
-                    void user.delete().then(() => signOut({redirectUrl: "/sign-in"})).catch((caught) => {
+                    void user.delete().then(() => signOut({redirectUrl: "/"})).catch((caught) => {
                       setDeleting(false);
                       setDeleteError(errorMessage(caught));
                     });

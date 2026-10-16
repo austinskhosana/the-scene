@@ -42,7 +42,7 @@ export function AccountMenu() {
           <span>Manage account</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator/>
-        <DropdownMenuItem onClick={() => void signOut({redirectUrl: '/sign-in'})}>
+        <DropdownMenuItem onClick={() => void signOut({redirectUrl: '/'})}>
           <Icon icon={Logout} size={16}/>
           <span>Sign out</span>
         </DropdownMenuItem>
