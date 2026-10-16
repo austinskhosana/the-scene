@@ -30,7 +30,10 @@ export function SignInForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isLoaded) return;
+    if (!isLoaded) {
+      setError("Sign-in is still loading. Refresh the page and try again.");
+      return;
+    }
 
     setError(null);
     setPending(true);
@@ -56,7 +59,10 @@ export function SignInForm() {
   }
 
   async function handleXSignIn() {
-    if (!isLoaded) return;
+    if (!isLoaded) {
+      setError("Sign-in is still loading. Refresh the page and try again.");
+      return;
+    }
 
     setError(null);
     setPending(true);
@@ -75,7 +81,10 @@ export function SignInForm() {
 
   async function handleSendResetCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isLoaded) return;
+    if (!isLoaded) {
+      setError("Sign-in is still loading. Refresh the page and try again.");
+      return;
+    }
 
     setError(null);
     setPending(true);
@@ -103,7 +112,10 @@ export function SignInForm() {
 
   async function handleResetPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isLoaded) return;
+    if (!isLoaded) {
+      setError("Sign-in is still loading. Refresh the page and try again.");
+      return;
+    }
 
     setError(null);
     if (resetPassword.length < 15) {
