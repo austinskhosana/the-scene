@@ -54,7 +54,7 @@ export function SignInForm() {
     }
   }
 
-  async function handleGoogleSignIn() {
+  async function handleXSignIn() {
     if (!isLoaded) return;
 
     setError(null);
@@ -62,7 +62,7 @@ export function SignInForm() {
 
     try {
       await signIn.authenticateWithRedirect({
-        strategy: "oauth_google",
+        strategy: "oauth_twitter",
         redirectUrl: "/sso-callback?destination=dashboard",
         redirectUrlComplete: "/dashboard",
       });
@@ -286,8 +286,8 @@ export function SignInForm() {
         <span className="h-px flex-1 bg-line" />
       </div>
 
-      <Button type="button" variant="secondary" size="lg" onClick={handleGoogleSignIn} disabled={pending}>
-        Continue with Google
+      <Button type="button" variant="secondary" size="lg" onClick={handleXSignIn} disabled={pending}>
+        Continue with X
       </Button>
 
       <p className="text-center text-sm text-fg-2">

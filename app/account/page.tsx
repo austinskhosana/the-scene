@@ -8,8 +8,8 @@ import {Button, buttonVariants} from "@/components/lime/ui/button";
 import {Card, CardDescription, CardHeader, CardTitle} from "@/components/lime/ui/card";
 import {Field, FieldError, FieldLabel} from "@/components/lime/ui/field";
 import {Input} from "@/components/lime/ui/input";
-import {List, ListIcon, ListItem} from "@/components/lime/ui/list";
-import {ArrowLeft, Delete, Email, Icon, Locked, LogoX, Logout, User} from "@/components/lime/icon";
+import {List, ListItem} from "@/components/lime/ui/list";
+import {ArrowLeft, Delete, Email, Icon, Locked, LogoX, Logout, UserFilled} from "@/components/lime/icon";
 import {cn} from "@/lib/lime/utils";
 
 function errorMessage(error: unknown) {
@@ -36,7 +36,7 @@ export default function AccountPage() {
 
   if (!isLoaded) {
     return (
-      <main className="mx-auto! min-h-dvh w-full max-w-2xl bg-page px-4 py-8 text-fg sm:px-6">
+      <main className="mx-auto! min-h-dvh w-full max-w-xl bg-page px-4 py-8 text-fg sm:px-6">
         <p className="text-sm text-fg-2">Loading your account…</p>
       </main>
     );
@@ -44,8 +44,8 @@ export default function AccountPage() {
 
   if (!user) {
     return (
-      <main className="mx-auto! min-h-dvh w-full max-w-2xl bg-page px-4 py-8 text-fg sm:px-6">
-        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Account</h1>
+      <main className="mx-auto! min-h-dvh w-full max-w-xl bg-page px-4 py-8 text-fg sm:px-6">
+        <h1 className="font-pixel-square text-xl font-semibold tracking-tight sm:text-2xl">Account</h1>
         <p className="mt-2 text-sm text-fg-2">Sign in to manage your Scene account.</p>
         <Link href="/sign-in" className={cn(buttonVariants({size: "lg"}), "mt-6")}>Sign in</Link>
       </main>
@@ -78,23 +78,23 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-dvh bg-page text-fg">
-      <main className="mx-auto! w-full max-w-2xl px-4! pb-12! pt-4! sm:px-6! sm:pb-16! sm:pt-8!">
+      <main className="mx-auto! w-full max-w-xl px-4! pb-12! pt-4! sm:px-6! sm:pb-16! sm:pt-8!">
         <header className="flex h-14 items-center gap-2">
           <Link href="/dashboard" aria-label="Back to dashboard" className={buttonVariants({variant: "ghost", size: "icon"})}>
             <Icon icon={ArrowLeft} size={20}/>
           </Link>
-          <h1 className="text-xl font-semibold leading-tight tracking-tight sm:text-2xl">Account</h1>
+          <h1 className="font-pixel-square text-xl font-semibold leading-tight tracking-tight sm:text-2xl">Account</h1>
         </header>
 
         <div className="flex flex-col gap-8">
           <section aria-labelledby="profile-heading" className="mt-8! flex flex-col gap-3 sm:mt-10!">
             <div>
-              <h2 id="profile-heading" className="text-lg font-semibold">Profile</h2>
+              <h2 id="profile-heading" className="font-pixel-square text-lg font-semibold">Profile</h2>
               <p className="mt-1 text-sm text-fg-2">The name shown across The Scene.</p>
             </div>
             <Card variant="surface" className="gap-6">
               <div className="flex min-w-0 items-center gap-4">
-                <Avatar size="lg" src={user.imageUrl} name={name}/>
+                <Avatar size="lg" src={user.hasImage ? user.imageUrl : undefined} name={name}/>
                 <div className="min-w-0">
                   <p className="truncate text-lg font-semibold">{name}</p>
                   <p className="truncate text-sm text-fg-2">{handle ?? user.primaryEmailAddress?.emailAddress}</p>
@@ -105,11 +105,11 @@ export default function AccountPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field name="firstName">
                     <FieldLabel>First name</FieldLabel>
-                    <Input value={firstName} onChange={(event) => setFirstName(event.target.value)} autoComplete="given-name"/>
+                    <Input focusStyle="neutral" value={firstName} onChange={(event) => setFirstName(event.target.value)} autoComplete="given-name"/>
                   </Field>
                   <Field name="lastName">
                     <FieldLabel>Last name</FieldLabel>
-                    <Input value={lastName} onChange={(event) => setLastName(event.target.value)} autoComplete="family-name"/>
+                    <Input focusStyle="neutral" value={lastName} onChange={(event) => setLastName(event.target.value)} autoComplete="family-name"/>
                   </Field>
                 </div>
                 {error && <FieldError role="alert">{error}</FieldError>}
@@ -117,7 +117,7 @@ export default function AccountPage() {
                   <Button type="submit" size="lg" pending={pending} className="w-full sm:w-auto sm:self-start">
                     Save profile
                   </Button>
-                  <p aria-live="polite" className="min-h-5 text-sm text-fg-2">{saved ? "Profile saved." : ""}</p>
+                  {saved && <p aria-live="polite" className="text-sm text-fg-2">Profile saved.</p>}
                 </div>
               </form>
             </Card>
@@ -125,14 +125,14 @@ export default function AccountPage() {
 
           <section aria-labelledby="email-heading" className="flex flex-col gap-3">
             <div>
-              <h2 id="email-heading" className="text-lg font-semibold">Email addresses</h2>
+              <h2 id="email-heading" className="font-pixel-square text-lg font-semibold">Email addresses</h2>
               <p className="mt-1 text-sm text-fg-2">Addresses connected to your account.</p>
             </div>
             <List variant="grouped">
               {user.emailAddresses.map((email) => (
                 <ListItem
                   key={email.id}
-                  leading={<ListIcon icon={Email}/>}
+                  leading={<Icon icon={Email} size={20}/>}
                   title={email.emailAddress}
                   description={email.verification.status === "verified" ? "Verified" : "Verification needed"}
                   trailing={email.id === user.primaryEmailAddressId ? <span className="text-sm text-fg-2">Primary</span> : undefined}
@@ -143,7 +143,7 @@ export default function AccountPage() {
 
           <section aria-labelledby="connections-heading" className="flex flex-col gap-3">
             <div>
-              <h2 id="connections-heading" className="text-lg font-semibold">Connected accounts</h2>
+              <h2 id="connections-heading" className="font-pixel-square text-lg font-semibold">Connected accounts</h2>
               <p className="mt-1 text-sm text-fg-2">Accounts used to sign in to The Scene.</p>
             </div>
             <List variant="grouped">
@@ -153,7 +153,7 @@ export default function AccountPage() {
                 return (
                   <ListItem
                     key={account.id}
-                    leading={<ListIcon icon={isX ? LogoX : User}/>}
+                    leading={<Icon icon={isX ? LogoX : UserFilled} size={20}/>}
                     title={account.providerTitle()}
                     description={identifier}
                     trailing={<span className="text-sm text-fg-2">Connected</span>}
@@ -161,7 +161,7 @@ export default function AccountPage() {
                 );
               }) : (
                 <ListItem
-                  leading={<ListIcon icon={LogoX}/>}
+                  leading={<Icon icon={LogoX} size={20}/>}
                   title="X account"
                   description="No connected X account found"
                 />
@@ -171,7 +171,7 @@ export default function AccountPage() {
 
           <section aria-labelledby="security-heading" className="flex flex-col gap-3 pb-8! sm:pb-12!">
             <div>
-              <h2 id="security-heading" className="text-lg font-semibold">Security</h2>
+              <h2 id="security-heading" className="font-pixel-square text-lg font-semibold">Security</h2>
               <p className="mt-1 text-sm text-fg-2">Your current sign-in setup.</p>
             </div>
             <Card variant="surface" className="text-left">

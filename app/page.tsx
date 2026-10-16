@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Show } from "@clerk/react";
+import { useAuth } from "@clerk/react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/lime/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/lime/ui/card";
@@ -20,6 +20,7 @@ const contributionDays = Array.from({ length: 364 }, (_, index) => {
 });
 
 export default function Home() {
+  const { isSignedIn } = useAuth();
   const [openSourceWorld, setOpenSourceWorld] = useState(false);
 
   const enterPipe = useCallback(() => {
@@ -110,26 +111,14 @@ export default function Home() {
                 The Scene helps you show up, reply with intention, and build real relationships on X, one conversation at a time. No bots or automated engagement.
               </p>
             </div>
-            <Show when="signed-out">
-              <Link
-                href="/sign-in"
-                data-action-platform
-                className={buttonVariants({ variant: "primary", size: "lg" })}
-              >
-                <span>Start your streak</span>
-                <Icon icon={ArrowRight} size={16} />
-              </Link>
-            </Show>
-            <Show when="signed-in">
-              <Link
-                href="/dashboard"
-                data-action-platform
-                className={buttonVariants({ variant: "primary", size: "lg" })}
-              >
-                <span>Start your streak</span>
-                <Icon icon={ArrowRight} size={16} />
-              </Link>
-            </Show>
+            <Link
+              href={isSignedIn ? "/dashboard" : "/sign-in"}
+              data-action-platform
+              className={buttonVariants({ variant: "primary", size: "lg" })}
+            >
+              <span>Start your streak</span>
+              <Icon icon={ArrowRight} size={16} />
+            </Link>
           </div>
         </section>
 
@@ -208,7 +197,7 @@ export default function Home() {
             />
           </Button>
           <>
-            <LandingSoldier spawnOnGround className="absolute inset-x-0 bottom-0 z-30 h-full" />
+            <LandingSoldier spawnOnGround className="absolute inset-x-0 bottom-0 z-60 h-full" />
             <div className="relative z-20 flex max-w-md flex-col items-center gap-4 text-center">
               <Icon icon={LogoGithub} size={32} className="text-fg" />
               <h2 id="open-source-title" className="font-pixel-square text-2xl leading-tight tracking-tight sm:text-3xl">

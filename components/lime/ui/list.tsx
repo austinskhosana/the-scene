@@ -66,7 +66,7 @@ function ListItem({title, description, leading, trailing, chevron, href, onClick
   </>;
   // With a menu the row keeps its full width, so its hover fill runs under the more button, and leaves room at
   // the end for the button, which sits over it as a sibling.
-  const shape = cn(rowClass, leading && 'after:start-17', menu ? 'pe-14' : undefined);
+  const shape = cn(rowClass, leading && ['gap-4', 'after:start-17'], menu ? 'pe-14' : undefined);
   return (
     <li data-slot="list-item" className={cn('group/item', menu && 'relative', className)} {...props}>
       {href && !disabled

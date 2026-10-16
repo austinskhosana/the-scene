@@ -86,11 +86,11 @@ export function SignUpForm() {
     setLocalErrorField(finalizeError ? "form" : null);
   }
 
-  async function handleGoogleSignUp() {
+  async function handleXSignUp() {
     setLocalError(null);
     setLocalErrorField(null);
     const { error } = await signUp.sso({
-      strategy: "oauth_google",
+      strategy: "oauth_twitter",
       redirectUrl: onboardingPath,
       redirectCallbackUrl: "/sso-callback",
     });
@@ -196,8 +196,8 @@ export function SignUpForm() {
         <span className="h-px flex-1 bg-line" />
       </div>
 
-      <Button type="button" variant="secondary" size="lg" onClick={handleGoogleSignUp} disabled={pending}>
-        Continue with Google
+      <Button type="button" variant="secondary" size="lg" onClick={handleXSignUp} disabled={pending}>
+        Continue with X
       </Button>
 
       <p className="text-center text-sm text-fg-2">

@@ -26,11 +26,11 @@ export function AccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger aria-label="Open account menu" className={buttonVariants({variant: 'ghost', size: 'icon-sm'})}>
-        <Avatar size="sm" src={user.imageUrl} name={name}/>
+        <Avatar size="sm" src={user.hasImage ? user.imageUrl : undefined} name={name}/>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-(--popover)">
         <div className="flex min-w-0 items-center gap-3 px-3 py-4">
-          <Avatar size="md" src={user.imageUrl} name={name}/>
+          <Avatar size="md" src={user.hasImage ? user.imageUrl : undefined} name={name}/>
           <div className="min-w-0 text-start">
             <p className="truncate text-sm font-medium">{name}</p>
             {detail && <p className="truncate text-xs text-fg-3">{detail}</p>}

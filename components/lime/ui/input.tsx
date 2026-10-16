@@ -12,7 +12,7 @@ const fieldControl = cva(
   [
     'w-full min-w-0 rounded-field border border-line-strong bg-field px-3 text-fg',
     'placeholder:text-fg-3 hover:not-disabled:not-aria-invalid:border-control',
-    'focus-visible:border-accent-line focus-visible:outline-offset-0',
+    'focus-visible:outline-offset-0',
     'aria-invalid:border-danger',
     'disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-fg-disabled disabled:placeholder:text-fg-disabled',
   ],
@@ -23,8 +23,12 @@ const fieldControl = cva(
         md: 'h-(--control-md) text-sm',
         lg: 'h-(--control-lg) text-base',
       },
+      focusStyle: {
+        accent: 'focus-visible:border-line-strong',
+        neutral: 'focus-visible:border-line-strong',
+      },
     },
-    defaultVariants: {size: 'md'},
+    defaultVariants: {size: 'md', focusStyle: 'accent'},
   },
 );
 

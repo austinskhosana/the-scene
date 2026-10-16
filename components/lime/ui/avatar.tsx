@@ -32,9 +32,12 @@ const firstGrapheme = (word: string) => segmenter ? (segmenter.segment(word)[Sym
 const initials = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => firstGrapheme(w).toLocaleUpperCase()).join('');
 
 function Avatar({className, size, src, name, ...props}: AvatarProps) {
+  const isDefault = !src;
+  const imageSrc = src ?? '/default-profile-avatar.png';
+
   return (
     <AvatarPrimitive.Root data-slot="avatar" className={mergeClass(avatarVariants({size}), className)} {...props}>
-      {src && <AvatarPrimitive.Image src={src} alt={name} className="size-full object-cover"/>}
+      <AvatarPrimitive.Image src={imageSrc} alt={name} className={cn('size-full object-cover', isDefault && 'scale-150')}/>
       <AvatarPrimitive.Fallback role="img" aria-label={name} className="flex size-full items-center justify-center">{initials(name)}</AvatarPrimitive.Fallback>
     </AvatarPrimitive.Root>
   );
