@@ -14,7 +14,12 @@ const SPINE = "/three/scene-case/the-scene-case-spine.png";
 
 type Disposable = { dispose: () => void };
 
-export function GameCaseScene() {
+type GameCaseSceneProps = {
+  onExplore?: () => void;
+  onReady?: () => void;
+};
+
+export function GameCaseScene({ onExplore, onReady }: GameCaseSceneProps) {
   const { isSignedIn } = useAuth();
   const mountRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
@@ -587,9 +592,13 @@ export function GameCaseScene() {
         caseModel.rotation.set(-0.018, 0.31, -0.012);
         caseModel.position.y = 0.035;
         setReady(true);
+        onReady?.();
       })
       .catch(() => {
-        if (!stopped) setReady(true);
+        if (!stopped) {
+          setReady(true);
+          onReady?.();
+        }
       });
 
     const pointer = new THREE.Vector2();
@@ -768,7 +777,13 @@ export function GameCaseScene() {
               key={item.href + item.number}
               href={item.href}
               tabIndex={menuOpen ? 0 : -1}
-              onClick={() => setMenuOpen(false)}
+              onClick={(event) => {
+                setMenuOpen(false);
+                if (item.href.endsWith("#landing-game") && onExplore) {
+                  event.preventDefault();
+                  onExplore();
+                }
+              }}
             >
               <span>{item.number}</span>
               {item.label}

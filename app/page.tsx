@@ -7,6 +7,7 @@ import { Button, buttonVariants } from "@/components/lime/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/lime/ui/card";
 import { LandingSoldier } from "@/components/game/landing-soldier";
 import { GameCaseScene } from "@/components/three/scene-case";
+import { SceneRevealLoader } from "@/components/scene/scene-reveal-loader";
 import { ArrowRight, CircleDash, Icon, LogoGithub, VideoGame } from "@/components/lime/icon";
 import { cn } from "@/lib/lime/utils";
 
@@ -23,10 +24,35 @@ const contributionDays = Array.from({ length: 364 }, (_, index) => {
 export default function Home() {
   const { isSignedIn } = useAuth();
   const [openSourceWorld, setOpenSourceWorld] = useState(false);
+  const [revealPhase, setRevealPhase] = useState<
+    "initial" | "initial-opening" | "closed" | "explore-covering" | "explore-opening"
+  >("initial");
 
   const enterPipe = useCallback(() => {
     setOpenSourceWorld(true);
   }, []);
+
+  const handleCaseReady = useCallback(() => {
+    setRevealPhase((phase) => (phase === "initial" ? "initial-opening" : phase));
+  }, []);
+
+  const handleExplore = useCallback(() => {
+    setRevealPhase("explore-covering");
+  }, []);
+
+  useEffect(() => {
+    if (revealPhase !== "explore-covering") return;
+
+    const landingGame = document.getElementById("landing-game");
+    if (!landingGame) return;
+
+    window.scrollTo({ top: landingGame.offsetTop, behavior: "auto" });
+    const frame = window.requestAnimationFrame(() => {
+      setRevealPhase("explore-opening");
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [revealPhase]);
 
   useEffect(() => {
     if (!openSourceWorld) return;
@@ -72,8 +98,20 @@ export default function Home() {
     <main className="relative isolate flex min-h-dvh flex-col overflow-x-clip bg-page text-fg">
       <section className="case-hero" aria-labelledby="case-hero-title">
         <h1 id="case-hero-title" className="sr-only">The Scene interactive game case</h1>
-        <GameCaseScene />
+        <GameCaseScene onExplore={handleExplore} onReady={handleCaseReady} />
       </section>
+      {revealPhase !== "closed" && revealPhase !== "initial" && (
+        <SceneRevealLoader
+          phase={revealPhase === "explore-covering" ? "covering" : "opening"}
+          onAnimationEnd={() => setRevealPhase("closed")}
+        />
+      )}
+      {revealPhase === "initial" && (
+        <SceneRevealLoader
+          phase="covering"
+          onAnimationEnd={() => setRevealPhase("closed")}
+        />
+      )}
       <section id="landing-game" className="landing-world relative h-dvh overflow-hidden">
         <div aria-hidden="true" className="landing-ground pointer-events-none absolute inset-x-0 z-40">
           <span data-ground-platform className="landing-ground-surface absolute inset-x-0" />

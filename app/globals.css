@@ -175,6 +175,12 @@ body {
 .lime .loader span { display: block; width: var(--control-lg); height: var(--control-sm); overflow: hidden; background: var(--surface-3); }
 .lime .loader span::after { content: ""; display: block; width: 44%; height: 100%; background: var(--accent); animation: scene-case-loading var(--dur-spin) var(--ease-in) infinite alternate; }
 @keyframes scene-case-loading { from { transform: translateX(-110%); } to { transform: translateX(230%); } }
+.lime .scene-reveal-loader { position: fixed; inset: 0; z-index: var(--z-dialog); display: grid; place-items: center; background: var(--surface); color: var(--accent); border-block-end: 1px solid var(--line); transform: translateY(0); }
+.lime .scene-reveal-loader--opening { animation: scene-reveal-slide-up var(--dur-slow) var(--ease-in) forwards; }
+.lime .scene-reveal-loader__content { display: grid; justify-items: center; gap: var(--control-md); }
+.lime .scene-reveal-loader__canvas { display: block; width: var(--control-lg); height: var(--control-lg); color: var(--accent); image-rendering: pixelated; }
+.lime .scene-reveal-loader__label { color: var(--fg-2); font-family: var(--font-mono); font-size: var(--text-xs); line-height: var(--leading-normal); }
+@keyframes scene-reveal-slide-up { to { transform: translateY(-100%); } }
 
 @media (min-width: 640px) {
   .lime .landing-streak-platform {
@@ -253,4 +259,5 @@ body {
   .lime .menu-instruction,
   .lime .case-menu a { transition-duration: 0.01ms; }
   .lime .loader span::after { animation-duration: var(--dur-spin); }
+  .lime .scene-reveal-loader--opening { animation-duration: 0.01ms; }
 }
