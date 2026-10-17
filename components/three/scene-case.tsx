@@ -7,6 +7,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { Switch } from "@/components/lime/ui/switch";
+import type { SceneSound } from "@/components/scene/use-scene-sound";
 
 const COVER = "/three/scene-case/the-scene-you-cant-sit-with-us-cover.png";
 const BACK = "/three/scene-case/the-scene-you-cant-sit-with-us-back-cover-v2.png";
@@ -16,9 +18,17 @@ type Disposable = { dispose: () => void };
 
 type GameCaseSceneProps = {
   onExplore?: () => void;
+  soundEnabled: boolean;
+  onSoundEnabledChange: (enabled: boolean) => void;
+  playSound: (sound: SceneSound) => void;
 };
 
-export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
+export function GameCaseScene({
+  onExplore,
+  soundEnabled,
+  onSoundEnabledChange,
+  playSound,
+}: GameCaseSceneProps) {
   const { isSignedIn } = useAuth();
   const mountRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
@@ -626,6 +636,7 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
             ? "Close The Scene menu with the interactive videogame case"
             : "Open The Scene menu with the interactive videogame case",
         );
+        playSound(next ? "caseOpen" : "caseClose");
         return next;
       });
     };
@@ -760,7 +771,7 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, []);
+  }, [playSound]);
 
   const menuItems = [
     { href: "/#landing-game", label: "Start exploring", number: "01" },
@@ -801,7 +812,10 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
               key={item.href + item.number}
               href={item.href}
               tabIndex={menuOpen ? 0 : -1}
+              onPointerEnter={() => playSound("menuHover")}
+              onFocus={() => playSound("menuHover")}
               onClick={(event) => {
+                playSound("menuSelect");
                 setMenuOpen(false);
                 if (item.href.endsWith("#landing-game") && onExplore) {
                   event.preventDefault();
@@ -813,6 +827,15 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
               {item.label}
             </Link>
           ))}
+          <div className="case-menu__sound">
+            <span>Sound</span>
+            <Switch
+              checked={soundEnabled}
+              onCheckedChange={onSoundEnabledChange}
+              tabIndex={menuOpen ? 0 : -1}
+              aria-label="Sound effects"
+            />
+          </div>
         </nav>
       </section>
     </main>

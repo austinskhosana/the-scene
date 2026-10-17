@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LandingSoldier } from "@/components/game/landing-soldier";
 import { GameCaseScene } from "@/components/three/scene-case";
 import { SceneRevealLoader } from "@/components/scene/scene-reveal-loader";
+import { useSceneSound } from "@/components/scene/use-scene-sound";
 import { ArrowRight, CircleDash, Icon, LogoGithub, VideoGame } from "@/components/lime/icon";
 import { cn } from "@/lib/lime/utils";
 
@@ -24,6 +25,7 @@ const contributionDays = Array.from({ length: 364 }, (_, index) => {
 
 export default function Home() {
   const { isSignedIn } = useAuth();
+  const { soundEnabled, setSoundEnabled, playSound } = useSceneSound();
   const [openSourceWorld, setOpenSourceWorld] = useState(false);
   const [revealPhase, setRevealPhase] = useState<
     "initial" | "initial-opening" | "closed" | "explore-covering" | "explore-opening"
@@ -34,8 +36,9 @@ export default function Home() {
   }, []);
 
   const handleExplore = useCallback(() => {
+    playSound("paperCover");
     setRevealPhase("explore-covering");
-  }, []);
+  }, [playSound]);
 
   useEffect(() => {
     if (revealPhase !== "initial") return;
@@ -55,11 +58,12 @@ export default function Home() {
 
     window.scrollTo({ top: landingGame.offsetTop, behavior: "auto" });
     const timer = window.setTimeout(() => {
+      playSound("paperReveal");
       setRevealPhase("explore-opening");
     }, REVEAL_HOLD_MS);
 
     return () => window.clearTimeout(timer);
-  }, [revealPhase]);
+  }, [playSound, revealPhase]);
 
   useEffect(() => {
     if (!openSourceWorld) return;
@@ -105,7 +109,12 @@ export default function Home() {
     <main className="relative isolate flex min-h-dvh flex-col overflow-x-clip bg-page text-fg">
       <section className="case-hero" aria-labelledby="case-hero-title">
         <h1 id="case-hero-title" className="sr-only">The Scene interactive game case</h1>
-        <GameCaseScene onExplore={handleExplore} />
+        <GameCaseScene
+          onExplore={handleExplore}
+          soundEnabled={soundEnabled}
+          onSoundEnabledChange={setSoundEnabled}
+          playSound={playSound}
+        />
       </section>
       {revealPhase !== "closed" && revealPhase !== "initial" && (
         <SceneRevealLoader
