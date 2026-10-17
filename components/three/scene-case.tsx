@@ -603,7 +603,6 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
     const raycaster = new THREE.Raycaster();
     let interacting = false;
     let dragged = false;
-    let interactionTimer = 0;
     const clock = new THREE.Clock();
     let frame = 0;
 
@@ -655,16 +654,12 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
       dragged = false;
       pointerDownPosition.set(event.clientX, event.clientY);
       renderer.domElement.style.cursor = "grabbing";
-      window.clearTimeout(interactionTimer);
     };
     const onPointerUp = (event: PointerEvent) => {
       renderer.domElement.style.cursor = caseIsHit(event.clientX, event.clientY)
         ? "pointer"
         : "grab";
-      window.clearTimeout(interactionTimer);
-      interactionTimer = window.setTimeout(() => {
-        interacting = false;
-      }, 1700);
+      interacting = false;
     };
     const onCanvasClick = (event: MouseEvent) => {
       if (!dragged && caseIsHit(event.clientX, event.clientY)) toggleMenu();
@@ -697,22 +692,28 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
     const render = () => {
       frame = 0;
       if (!isVisible || document.hidden) return;
-      const elapsed = clock.getElapsedTime();
-      pointer.lerp(pointerTarget, 0.035);
+      const delta = Math.min(clock.getDelta(), 0.05);
+      const elapsed = clock.elapsedTime;
+      pointer.x = THREE.MathUtils.damp(pointer.x, pointerTarget.x, 2.15, delta);
+      pointer.y = THREE.MathUtils.damp(pointer.y, pointerTarget.y, 2.15, delta);
       const targetX = menuOpenRef.current
         ? mount.clientWidth < 760
           ? -0.74
           : -1.18
         : 0;
-      caseRoot.position.x = THREE.MathUtils.lerp(
+      caseRoot.position.x = THREE.MathUtils.damp(
         caseRoot.position.x,
         targetX,
-        0.075,
+        4.7,
+        delta,
       );
       if (!interacting) {
-        caseRoot.rotation.y = Math.sin(elapsed * 0.42) * 0.035 + pointer.x * 0.018;
-        caseRoot.rotation.x = Math.sin(elapsed * 0.34) * 0.008 - pointer.y * 0.012;
-        caseRoot.position.y = Math.sin(elapsed * 0.62) * 0.018;
+        const targetRotationY = Math.sin(elapsed * 0.42) * 0.035 + pointer.x * 0.018;
+        const targetRotationX = Math.sin(elapsed * 0.34) * 0.008 - pointer.y * 0.012;
+        const targetY = Math.sin(elapsed * 0.62) * 0.018;
+        caseRoot.rotation.y = THREE.MathUtils.damp(caseRoot.rotation.y, targetRotationY, 5.5, delta);
+        caseRoot.rotation.x = THREE.MathUtils.damp(caseRoot.rotation.x, targetRotationX, 5.5, delta);
+        caseRoot.position.y = THREE.MathUtils.damp(caseRoot.position.y, targetY, 5.5, delta);
       }
       controls.update();
       renderer.render(scene, camera);
@@ -746,7 +747,6 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
     return () => {
       stopped = true;
       stopRender();
-      window.clearTimeout(interactionTimer);
       resizeObserver.disconnect();
       visibilityObserver?.disconnect();
       document.removeEventListener("visibilitychange", onVisibilityChange);
