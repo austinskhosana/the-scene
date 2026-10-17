@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button, buttonVariants } from "@/components/lime/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/lime/ui/card";
 import { LandingSoldier } from "@/components/game/landing-soldier";
+import { GameCaseScene } from "@/components/three/scene-case";
 import { ArrowRight, CircleDash, Icon, LogoGithub, VideoGame } from "@/components/lime/icon";
 import { cn } from "@/lib/lime/utils";
 
@@ -69,6 +70,10 @@ export default function Home() {
 
   return (
     <main className="relative isolate flex min-h-dvh flex-col overflow-x-clip bg-page text-fg">
+      <section className="case-hero" aria-labelledby="case-hero-title">
+        <h1 id="case-hero-title" className="sr-only">The Scene interactive game case</h1>
+        <GameCaseScene />
+      </section>
       <section className="landing-world relative h-dvh overflow-hidden">
         <div aria-hidden="true" className="landing-ground pointer-events-none absolute inset-x-0 z-40">
           <span data-ground-platform className="landing-ground-surface absolute inset-x-0" />
