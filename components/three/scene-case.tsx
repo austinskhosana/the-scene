@@ -16,10 +16,9 @@ type Disposable = { dispose: () => void };
 
 type GameCaseSceneProps = {
   onExplore?: () => void;
-  onReady?: () => void;
 };
 
-export function GameCaseScene({ onExplore, onReady }: GameCaseSceneProps) {
+export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
   const { isSignedIn } = useAuth();
   const mountRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
@@ -592,13 +591,9 @@ export function GameCaseScene({ onExplore, onReady }: GameCaseSceneProps) {
         caseModel.rotation.set(-0.018, 0.31, -0.012);
         caseModel.position.y = 0.035;
         setReady(true);
-        onReady?.();
       })
       .catch(() => {
-        if (!stopped) {
-          setReady(true);
-          onReady?.();
-        }
+        if (!stopped) setReady(true);
       });
 
     const pointer = new THREE.Vector2();

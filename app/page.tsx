@@ -13,6 +13,7 @@ import { cn } from "@/lib/lime/utils";
 
 const contributionLevelClass = ["bg-surface-3", "bg-surface-3", "bg-accent-line", "bg-accent"];
 const contributionLegendClass = ["bg-surface-3", "bg-surface-3", "bg-surface-3", "bg-accent"];
+const REVEAL_HOLD_MS = 4000;
 const contributionDays = Array.from({ length: 364 }, (_, index) => {
   if (index > 278) return 0;
   if (index % 17 === 0 || index % 29 === 0) return 3;
@@ -32,13 +33,19 @@ export default function Home() {
     setOpenSourceWorld(true);
   }, []);
 
-  const handleCaseReady = useCallback(() => {
-    setRevealPhase((phase) => (phase === "initial" ? "initial-opening" : phase));
-  }, []);
-
   const handleExplore = useCallback(() => {
     setRevealPhase("explore-covering");
   }, []);
+
+  useEffect(() => {
+    if (revealPhase !== "initial") return;
+
+    const timer = window.setTimeout(() => {
+      setRevealPhase("initial-opening");
+    }, REVEAL_HOLD_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [revealPhase]);
 
   useEffect(() => {
     if (revealPhase !== "explore-covering") return;
@@ -47,11 +54,11 @@ export default function Home() {
     if (!landingGame) return;
 
     window.scrollTo({ top: landingGame.offsetTop, behavior: "auto" });
-    const frame = window.requestAnimationFrame(() => {
+    const timer = window.setTimeout(() => {
       setRevealPhase("explore-opening");
-    });
+    }, REVEAL_HOLD_MS);
 
-    return () => window.cancelAnimationFrame(frame);
+    return () => window.clearTimeout(timer);
   }, [revealPhase]);
 
   useEffect(() => {
@@ -98,7 +105,7 @@ export default function Home() {
     <main className="relative isolate flex min-h-dvh flex-col overflow-x-clip bg-page text-fg">
       <section className="case-hero" aria-labelledby="case-hero-title">
         <h1 id="case-hero-title" className="sr-only">The Scene interactive game case</h1>
-        <GameCaseScene onExplore={handleExplore} onReady={handleCaseReady} />
+        <GameCaseScene onExplore={handleExplore} />
       </section>
       {revealPhase !== "closed" && revealPhase !== "initial" && (
         <SceneRevealLoader

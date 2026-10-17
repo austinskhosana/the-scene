@@ -178,7 +178,7 @@ body {
 .lime .scene-reveal-loader { position: fixed; inset: 0; z-index: var(--z-dialog); display: grid; place-items: center; background: var(--surface); color: var(--accent); border-block-end: 1px solid var(--line); transform: translateY(0); }
 .lime .scene-reveal-loader--opening { animation: scene-reveal-slide-up var(--dur-slow) var(--ease-in) forwards; }
 .lime .scene-reveal-loader__content { display: grid; justify-items: center; gap: var(--control-md); }
-.lime .scene-reveal-loader__canvas { display: block; width: var(--control-lg); height: var(--control-lg); color: var(--accent); image-rendering: pixelated; }
+.lime .scene-reveal-loader__canvas { display: block; width: calc(var(--control-lg) * 1.5); height: calc(var(--control-lg) * 1.5); color: var(--accent); image-rendering: pixelated; }
 .lime .scene-reveal-loader__label { color: var(--fg-2); font-family: var(--font-mono); font-size: var(--text-xs); line-height: var(--leading-normal); }
 @keyframes scene-reveal-slide-up { to { transform: translateY(-100%); } }
 

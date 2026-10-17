@@ -43,7 +43,7 @@ function PixelLatticeLoader() {
             Math.sin((now - startedAt) * 0.003 - 0.7 * row - 0.35 * column),
           );
           context.fillStyle = accent;
-          context.globalAlpha = 0.06 + 0.84 * pulse ** 1.6;
+          context.globalAlpha = 0.2 + 0.8 * pulse ** 1.6;
           context.fillRect(
             Math.round(center + (row - 1) * spacing) - Math.floor(pixel / 2),
             Math.round(center + (column - 1) * spacing) - Math.floor(pixel / 2),
