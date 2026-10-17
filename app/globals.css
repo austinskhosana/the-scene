@@ -166,11 +166,14 @@ body {
 .lime .case-menu { position: absolute; z-index: 5; top: 50%; right: clamp(var(--control-lg), 9vw, 10rem); display: flex; width: min(23vw, 24rem); flex-direction: column; gap: var(--control-md); transform: translate3d(1.75rem, -50%, 0); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-slow) var(--ease-out), visibility 0s linear var(--dur-slow); }
 .lime .product-stage--menu-open .case-menu { transform: translate3d(0, -50%, 0); opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 160ms, 110ms, 0s; }
 .lime .case-menu__label { margin-bottom: var(--control-sm); color: var(--fg-3); font-family: var(--font-mono); font-size: var(--text-xs); }
-.lime .case-menu a { display: grid; grid-template-columns: 2.5em 1fr; width: 100%; padding: 0; color: var(--fg); font-family: var(--font-mono); font-size: var(--text-base); line-height: var(--leading-snug); text-decoration: none; transition: color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
-.lime .case-menu a span { color: var(--fg-3); font-size: var(--text-xs); }
-.lime .case-menu a:hover { color: var(--fg-2); transform: translateX(var(--control-sm)); }
-.lime .case-menu a:focus-visible { outline: var(--line-focus) solid var(--ring); outline-offset: var(--focus-offset); }
-.lime .case-menu__sound { display: flex; align-items: center; justify-content: space-between; margin-top: var(--control-sm); color: var(--fg-2); font-family: var(--font-mono); font-size: var(--text-sm); line-height: var(--leading-normal); }
+.lime .case-menu a,
+.lime .case-menu__sound { display: grid; grid-template-columns: 2.5em 1fr; width: 100%; padding: 0; justify-content: initial; color: var(--fg); font-family: var(--font-mono); font-size: var(--text-base); font-weight: var(--weight-normal); line-height: var(--leading-snug); text-align: start; text-decoration: none; transition: color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+.lime .case-menu a span,
+.lime .case-menu__sound span:first-child { color: var(--fg-3); font-size: var(--text-xs); }
+.lime .case-menu a:hover,
+.lime .case-menu__sound:hover { color: var(--fg-2); transform: translateX(var(--control-sm)); }
+.lime .case-menu a:focus-visible,
+.lime .case-menu__sound:focus-visible { outline: var(--line-focus) solid var(--ring); outline-offset: var(--focus-offset); }
 .lime .loader { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; pointer-events: none; opacity: 1; transition: opacity var(--dur-fast) var(--ease-out); }
 .lime .loader--hidden { opacity: 0; }
 .lime .loader span { display: block; width: var(--control-lg); height: var(--control-sm); overflow: hidden; background: var(--surface-3); }
@@ -252,8 +255,8 @@ body {
 
   .lime .case-menu { top: auto; right: var(--control-sm); bottom: var(--control-sm); left: var(--control-sm); width: auto; gap: var(--control-sm); padding: var(--control-md); border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--surface); transform: translate3d(0, var(--control-sm), 0); }
   .lime .case-menu__label { margin-bottom: 0; }
-  .lime .case-menu a { font-size: var(--text-sm); }
-  .lime .case-menu__sound { margin-top: 0; padding-top: var(--control-sm); border-top: 1px solid var(--line); }
+  .lime .case-menu a,
+  .lime .case-menu__sound { font-size: var(--text-sm); }
   .lime .product-stage--menu-open .case-menu { transform: translate3d(0, 0, 0); }
   .lime .product-stage--menu-open .menu-instruction { top: var(--control-lg); bottom: auto; left: 50%; }
 }

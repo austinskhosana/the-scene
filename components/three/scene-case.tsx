@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-import { Switch } from "@/components/lime/ui/switch";
+import { Button } from "@/components/lime/ui/button";
 import type { SceneSound } from "@/components/scene/use-scene-sound";
 
 const COVER = "/three/scene-case/the-scene-you-cant-sit-with-us-cover.png";
@@ -827,15 +827,22 @@ export function GameCaseScene({
               {item.label}
             </Link>
           ))}
-          <div className="case-menu__sound">
-            <span>Sound</span>
-            <Switch
-              checked={soundEnabled}
-              onCheckedChange={onSoundEnabledChange}
-              tabIndex={menuOpen ? 0 : -1}
-              aria-label="Sound effects"
-            />
-          </div>
+          <Button
+            type="button"
+            variant="link"
+            size="sm"
+            className="case-menu__sound"
+            tabIndex={menuOpen ? 0 : -1}
+            onPointerEnter={() => playSound("menuHover")}
+            onFocus={() => playSound("menuHover")}
+            onClick={() => {
+              playSound("menuSelect");
+              onSoundEnabledChange(!soundEnabled);
+            }}
+          >
+            <span>05</span>
+            <span>{soundEnabled ? "Sound on" : "Sound off"}</span>
+          </Button>
         </nav>
       </section>
     </main>
