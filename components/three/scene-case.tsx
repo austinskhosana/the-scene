@@ -730,14 +730,10 @@ export function GameCaseScene() {
   }, []);
 
   const menuItems = [
-    { href: "/", label: "Home", number: "01" },
-    { href: isSignedIn ? "/dashboard" : "/sign-in", label: isSignedIn ? "Dashboard" : "Start your streak", number: "02" },
-    { href: "/onboarding", label: "Onboarding", number: "03" },
-    { href: "/playground", label: "Game playground", number: "04" },
-    ...(isSignedIn ? [{ href: "/account", label: "Account", number: "05" }] : [
-      { href: "/sign-in", label: "Sign in", number: "05" },
-      { href: "/sign-up", label: "Sign up", number: "06" },
-    ]),
+    { href: "/#landing-game", label: "Start exploring", number: "01" },
+    { href: "/sign-up", label: "Start your streak", number: "02" },
+    { href: isSignedIn ? "/dashboard" : "/sign-in", label: "Dashboard", number: "03" },
+    { href: "/sign-in", label: "Sign in", number: "04" },
   ];
 
   return (
@@ -768,7 +764,12 @@ export function GameCaseScene() {
         >
           <span className="case-menu__label">The Scene menu</span>
           {menuItems.map((item) => (
-            <Link key={item.href + item.number} href={item.href} tabIndex={menuOpen ? 0 : -1}>
+            <Link
+              key={item.href + item.number}
+              href={item.href}
+              tabIndex={menuOpen ? 0 : -1}
+              onClick={() => setMenuOpen(false)}
+            >
               <span>{item.number}</span>
               {item.label}
             </Link>

@@ -74,7 +74,7 @@ export default function Home() {
         <h1 id="case-hero-title" className="sr-only">The Scene interactive game case</h1>
         <GameCaseScene />
       </section>
-      <section className="landing-world relative h-dvh overflow-hidden">
+      <section id="landing-game" className="landing-world relative h-dvh overflow-hidden">
         <div aria-hidden="true" className="landing-ground pointer-events-none absolute inset-x-0 z-40">
           <span data-ground-platform className="landing-ground-surface absolute inset-x-0" />
         </div>

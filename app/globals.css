@@ -245,7 +245,7 @@ body {
 
   .lime .case-menu { top: auto; right: var(--control-sm); bottom: var(--control-lg); left: var(--control-sm); width: auto; transform: translate3d(0, var(--control-sm), 0); }
   .lime .product-stage--menu-open .case-menu { transform: translate3d(0, 0, 0); }
-  .lime .product-stage--menu-open .menu-instruction { left: 50%; }
+  .lime .product-stage--menu-open .menu-instruction { top: var(--control-lg); bottom: auto; left: 50%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
