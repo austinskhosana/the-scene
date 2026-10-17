@@ -61,7 +61,7 @@ type GhostTrailParticle = {
   symbol: string;
 };
 
-const { player, shooting, pipe, ghost } = landingGameConfig;
+const { player, shooting, pipe, ghost, ghostTrail } = landingGameConfig;
 const MOVE_SPEED = player.moveSpeed;
 const MOVE_ACCELERATION = player.moveAcceleration;
 const MOVE_DECELERATION = player.moveDeceleration;
@@ -88,6 +88,8 @@ const GHOST_HIT_HALF_WIDTH = ghost.hitHalfWidth;
 const GHOST_HIT_HALF_HEIGHT = ghost.hitHalfHeight;
 const GHOST_TRAIL_INTERVAL_MS = ghost.trailIntervalMs;
 const GHOST_TRAIL_LIFETIME_MS = ghost.trailLifetimeMs;
+const MAX_GHOST_TRAIL_PARTICLES = ghostTrail.maxParticles;
+const MAX_GAME_PIXEL_RATIO = 1.5;
 const PLAYER_CONTACT_INSET = player.contactInset;
 const LOWER_LEVEL_CONTACT_INSET = player.lowerLevelContactInset;
 const PIPE_ENTER_DURATION_MS = pipe.enterDurationMs;
@@ -224,8 +226,10 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
     let logicalHeight = 0;
     let nextGhostId = 1;
     let nextGhostAt = previousTime + 1800;
+    let platformMeasureFramesRemaining = 0;
     let accentColor = "";
     let isMobileViewport = false;
+    let isVisible = true;
     const debugEnabled = new URLSearchParams(window.location.search).get("debug") === "1";
     // DOM elements are the level. The platform module owns browser-to-canvas coordinates.
     const platformDiscovery = discoverGamePlatforms(canvas, logicalWidth, logicalHeight);
@@ -234,7 +238,7 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
 
     const resize = () => {
       const bounds = canvas.getBoundingClientRect();
-      const density = Math.min(window.devicePixelRatio || 1, 2);
+      const density = Math.min(window.devicePixelRatio || 1, MAX_GAME_PIXEL_RATIO);
       logicalWidth = Math.max(bounds.width, 1);
       logicalHeight = Math.max(bounds.height, 1);
       isMobileViewport = window.matchMedia("(max-width: 639px)").matches;
@@ -246,6 +250,7 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
       accentColor = styles.getPropertyValue("--accent").trim() || styles.color;
       // Platform positions only need refreshing when layout changes, not every frame.
       measuredPlatforms = platformDiscovery.measure();
+      platformMeasureFramesRemaining = 3;
       resetRequestedRef.current = true;
     };
 
@@ -296,8 +301,12 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
         previousTime = time;
         const state = stateRef.current;
         // Transformed DOM platforms can settle after the canvas first measures them.
-        // Refresh before simulation so the player always lands on the visible surface.
-        measuredPlatforms = platformDiscovery.measure();
+        // Refresh for a few frames after layout changes, then keep the cached bounds
+        // out of the hot loop so every frame stays on the canvas.
+        if (platformMeasureFramesRemaining > 0) {
+          measuredPlatforms = platformDiscovery.measure();
+          platformMeasureFramesRemaining -= 1;
+        }
         const playerSize = Math.min(132, Math.max(108, logicalWidth * 0.16));
       const playerScale = playerSize / 456;
       const shootScale = playerScale * SHOOT_SCALE_CORRECTION;
@@ -496,7 +505,11 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
         }
       }
 
-      if (time >= nextGhostAt && ghostsRef.current.filter((ghost) => ghost.hitAt === null).length < 2) {
+      let activeGhostCount = 0;
+      for (const ghost of ghostsRef.current) {
+        if (ghost.hitAt === null) activeGhostCount += 1;
+      }
+      if (time >= nextGhostAt && activeGhostCount < 2) {
         const lane = nextGhostId % 2;
         const spawnX = logicalWidth * (lane === 0 ? 0.18 : 0.82);
         ghostsRef.current.push({
@@ -560,18 +573,25 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
         }
       }
 
-      ghostTrailRef.current = ghostTrailRef.current
-        .map((particle) => ({
-          ...particle,
-          x: particle.x + particle.velocityX * delta,
-          y: particle.y + particle.velocityY * delta,
-        }))
-        .filter((particle) => time - particle.bornAt < particle.lifetime)
-        .slice(-120);
+      for (let index = ghostTrailRef.current.length - 1; index >= 0; index -= 1) {
+        const particle = ghostTrailRef.current[index];
+        particle.x += particle.velocityX * delta;
+        particle.y += particle.velocityY * delta;
+        if (time - particle.bornAt >= particle.lifetime) {
+          ghostTrailRef.current.splice(index, 1);
+        }
+      }
+      if (ghostTrailRef.current.length > MAX_GHOST_TRAIL_PARTICLES) {
+        ghostTrailRef.current.splice(0, ghostTrailRef.current.length - MAX_GHOST_TRAIL_PARTICLES);
+      }
 
-      projectilesRef.current = projectilesRef.current
-        .map((projectile) => ({ ...projectile, x: projectile.x + projectile.velocityX * delta }))
-        .filter((projectile) => projectile.x > -32 && projectile.x < logicalWidth + 32);
+      for (let index = projectilesRef.current.length - 1; index >= 0; index -= 1) {
+        const projectile = projectilesRef.current[index];
+        projectile.x += projectile.velocityX * delta;
+        if (projectile.x <= -32 || projectile.x >= logicalWidth + 32) {
+          projectilesRef.current.splice(index, 1);
+        }
+      }
 
       for (const projectile of projectilesRef.current) {
         const target = ghostsRef.current.find((ghost) => {
@@ -585,9 +605,12 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
           projectile.x = -100;
         }
       }
-      ghostsRef.current = ghostsRef.current.filter(
-        (ghost) => ghost.hitAt === null || time - ghost.hitAt < GHOST_DISSOLVE_MS,
-      );
+      for (let index = ghostsRef.current.length - 1; index >= 0; index -= 1) {
+        const ghost = ghostsRef.current[index];
+        if (ghost.hitAt !== null && time - ghost.hitAt >= GHOST_DISSOLVE_MS) {
+          ghostsRef.current.splice(index, 1);
+        }
+      }
 
       context.clearRect(0, 0, logicalWidth, logicalHeight);
 
@@ -707,50 +730,77 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
         drawSheetFrame("idle", getArtFrame(theSceneArt.idle, time), playerAnchorX, playerAnchorY, playerScale, state.facing);
       }
 
-      if (debugEnabled) canvas.dataset.debug = "1";
-      canvas.dataset.playerX = state.x.toFixed(1);
-      canvas.dataset.playerY = state.y.toFixed(1);
-      canvas.dataset.playerSize = playerSize.toFixed(1);
-      canvas.dataset.platformTop = platformBounds.top.toFixed(1);
-      canvas.dataset.groundTop = groundTop.toFixed(1);
-      const actionPlatformBounds = playerPlatforms.find(({ surface }) => surface === "action");
-      canvas.dataset.actionPlatformTop = actionPlatformBounds?.top.toFixed(1) ?? "";
-      canvas.dataset.surface = state.standingOn ?? "air";
-      canvas.dataset.animation = !state.grounded
-        ? isShooting ? "airborne-shoot" : "airborne"
-        : isShooting
-          ? "shoot"
-          : Math.abs(state.velocityX) > 8
-            ? "run"
-            : "idle";
-      canvas.dataset.projectiles = String(projectilesRef.current.length);
-      canvas.dataset.ghosts = String(ghostsRef.current.length);
-      canvas.dataset.materializingGhosts = String(
-        ghostsRef.current.filter((ghost) => time - ghost.bornAt < GHOST_MATERIALIZE_MS).length,
-      );
-      canvas.dataset.ghostParticles = String(ghostTrailRef.current.length);
-      const closestGhostPlatformClearance = ghostsRef.current.reduce((closest, ghost) => {
-        const overlapsPlatform = ghost.x + ghostCollisionHalfWidth > platformBounds.left &&
-          ghost.x - ghostCollisionHalfWidth < platformBounds.right;
-        if (!overlapsPlatform || ghost.y > platformBounds.top) return closest;
-        const hoverY = ghost.y + Math.sin(time / 650 + ghost.phase) * GHOST_HOVER_AMPLITUDE;
-        return Math.min(closest, platformBounds.top - (hoverY + ghostBottomExtent));
-      }, Infinity);
-      canvas.dataset.ghostPlatformClearance = Number.isFinite(closestGhostPlatformClearance)
-        ? closestGhostPlatformClearance.toFixed(1)
-        : "";
-      const closestGhostDistance = ghostsRef.current
-        .filter((ghost) => ghost.hitAt === null)
-        .reduce((closest, ghost) => Math.min(closest, Math.hypot(ghost.x - playerCenterX, ghost.y - playerCenterY)), Infinity);
-      canvas.dataset.closestGhostDistance = Number.isFinite(closestGhostDistance)
-        ? closestGhostDistance.toFixed(1)
-        : "";
-      animationFrame = requestAnimationFrame(draw);
+      if (debugEnabled) {
+        canvas.dataset.debug = "1";
+        canvas.dataset.playerX = state.x.toFixed(1);
+        canvas.dataset.playerY = state.y.toFixed(1);
+        canvas.dataset.playerSize = playerSize.toFixed(1);
+        canvas.dataset.platformTop = platformBounds.top.toFixed(1);
+        canvas.dataset.groundTop = groundTop.toFixed(1);
+        const actionPlatformBounds = playerPlatforms.find(({ surface }) => surface === "action");
+        canvas.dataset.actionPlatformTop = actionPlatformBounds?.top.toFixed(1) ?? "";
+        canvas.dataset.surface = state.standingOn ?? "air";
+        canvas.dataset.animation = !state.grounded
+          ? isShooting ? "airborne-shoot" : "airborne"
+          : isShooting
+            ? "shoot"
+            : Math.abs(state.velocityX) > 8
+              ? "run"
+              : "idle";
+        canvas.dataset.projectiles = String(projectilesRef.current.length);
+        canvas.dataset.ghosts = String(ghostsRef.current.length);
+        canvas.dataset.materializingGhosts = String(
+          ghostsRef.current.filter((ghost) => time - ghost.bornAt < GHOST_MATERIALIZE_MS).length,
+        );
+        canvas.dataset.ghostParticles = String(ghostTrailRef.current.length);
+        const closestGhostPlatformClearance = ghostsRef.current.reduce((closest, ghost) => {
+          const overlapsPlatform = ghost.x + ghostCollisionHalfWidth > platformBounds.left &&
+            ghost.x - ghostCollisionHalfWidth < platformBounds.right;
+          if (!overlapsPlatform || ghost.y > platformBounds.top) return closest;
+          const hoverY = ghost.y + Math.sin(time / 650 + ghost.phase) * GHOST_HOVER_AMPLITUDE;
+          return Math.min(closest, platformBounds.top - (hoverY + ghostBottomExtent));
+        }, Infinity);
+        canvas.dataset.ghostPlatformClearance = Number.isFinite(closestGhostPlatformClearance)
+          ? closestGhostPlatformClearance.toFixed(1)
+          : "";
+        const closestGhostDistance = ghostsRef.current
+          .filter((ghost) => ghost.hitAt === null)
+          .reduce((closest, ghost) => Math.min(closest, Math.hypot(ghost.x - playerCenterX, ghost.y - playerCenterY)), Infinity);
+        canvas.dataset.closestGhostDistance = Number.isFinite(closestGhostDistance)
+          ? closestGhostDistance.toFixed(1)
+          : "";
+      }
+      if (isVisible && !document.hidden) animationFrame = requestAnimationFrame(draw);
     };
 
-    animationFrame = requestAnimationFrame(draw);
-    return () => {
+    const stopAnimation = () => {
+      if (animationFrame === 0) return;
       cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+    };
+    const startAnimation = () => {
+      if (animationFrame === 0 && isVisible && !document.hidden) {
+        animationFrame = requestAnimationFrame(draw);
+      }
+    };
+    const visibilityObserver = typeof IntersectionObserver === "undefined"
+      ? null
+      : new IntersectionObserver(([entry]) => {
+        isVisible = entry?.isIntersecting ?? true;
+        if (isVisible) startAnimation();
+        else stopAnimation();
+      }, { threshold: 0.01 });
+    visibilityObserver?.observe(canvas);
+    const onVisibilityChange = () => {
+      if (document.hidden) stopAnimation();
+      else startAnimation();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    startAnimation();
+    return () => {
+      stopAnimation();
+      visibilityObserver?.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       observer.disconnect();
     };
   }, [onEnterPipe, spawnOnGround]);

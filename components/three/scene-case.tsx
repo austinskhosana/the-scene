@@ -45,7 +45,7 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
       alpha: false,
       powerPreference: "high-performance",
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 0.74;
@@ -99,14 +99,14 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
     const shadowLight = new THREE.DirectionalLight(0xfffdf7, 0.85);
     shadowLight.position.set(-3.5, 7.5, 5);
     shadowLight.castShadow = true;
-    shadowLight.shadow.mapSize.set(2048, 2048);
+    shadowLight.shadow.mapSize.set(1024, 1024);
     shadowLight.shadow.camera.left = -6;
     shadowLight.shadow.camera.right = 6;
     shadowLight.shadow.camera.top = 7;
     shadowLight.shadow.camera.bottom = -7;
     shadowLight.shadow.bias = -0.00015;
     shadowLight.shadow.radius = 5;
-    shadowLight.shadow.blurSamples = 16;
+    shadowLight.shadow.blurSamples = 8;
     scene.add(shadowLight);
 
     const groundMaterial = new THREE.ShadowMaterial({
@@ -235,7 +235,7 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
         const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
         [frontTexture, backTexture, spineTexture].forEach((texture) => {
           texture.colorSpace = THREE.SRGBColorSpace;
-          texture.anisotropy = Math.min(16, maxAnisotropy);
+          texture.anisotropy = Math.min(8, maxAnisotropy);
           texture.minFilter = THREE.LinearMipmapLinearFilter;
           texture.magFilter = THREE.LinearFilter;
           disposables.push(texture);
@@ -543,7 +543,7 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
 
         const wearTexture = makeWearTexture();
         if (wearTexture) {
-          wearTexture.anisotropy = Math.min(16, maxAnisotropy);
+          wearTexture.anisotropy = Math.min(8, maxAnisotropy);
           disposables.push(wearTexture);
           const wearMaterial = new THREE.MeshBasicMaterial({
             map: wearTexture,
@@ -637,8 +637,9 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
       pointerTarget.y = -((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
       if (
         interacting &&
-        pointerDownPosition.distanceTo(
-          new THREE.Vector2(event.clientX, event.clientY),
+        Math.hypot(
+          event.clientX - pointerDownPosition.x,
+          event.clientY - pointerDownPosition.y,
         ) > 8
       ) {
         dragged = true;
@@ -686,14 +687,16 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height, false);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     };
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(mount);
     resize();
 
+    let isVisible = true;
     const render = () => {
-      frame = window.requestAnimationFrame(render);
+      frame = 0;
+      if (!isVisible || document.hidden) return;
       const elapsed = clock.getElapsedTime();
       pointer.lerp(pointerTarget, 0.035);
       const targetX = menuOpenRef.current
@@ -713,14 +716,40 @@ export function GameCaseScene({ onExplore }: GameCaseSceneProps) {
       }
       controls.update();
       renderer.render(scene, camera);
+      frame = window.requestAnimationFrame(render);
     };
-    render();
+    const startRender = () => {
+      if (frame === 0 && isVisible && !document.hidden) {
+        frame = window.requestAnimationFrame(render);
+      }
+    };
+    const stopRender = () => {
+      if (frame === 0) return;
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+    };
+    const visibilityObserver = typeof IntersectionObserver === "undefined"
+      ? null
+      : new IntersectionObserver(([entry]) => {
+        isVisible = entry?.isIntersecting ?? true;
+        if (isVisible) startRender();
+        else stopRender();
+      }, { threshold: 0.01 });
+    visibilityObserver?.observe(mount);
+    const onVisibilityChange = () => {
+      if (document.hidden) stopRender();
+      else startRender();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    startRender();
 
     return () => {
       stopped = true;
-      window.cancelAnimationFrame(frame);
+      stopRender();
       window.clearTimeout(interactionTimer);
       resizeObserver.disconnect();
+      visibilityObserver?.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       renderer.domElement.removeEventListener("pointermove", onPointerMove);
       renderer.domElement.removeEventListener("pointerdown", onPointerDown);
       renderer.domElement.removeEventListener("click", onCanvasClick);
