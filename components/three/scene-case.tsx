@@ -654,11 +654,6 @@ export function GameCaseScene({
       ) {
         dragged = true;
       }
-      if (!interacting) {
-        renderer.domElement.style.cursor = caseIsHit(event.clientX, event.clientY)
-          ? "pointer"
-          : "grab";
-      }
     };
     const onPointerDown = (event: PointerEvent) => {
       interacting = true;
@@ -667,9 +662,7 @@ export function GameCaseScene({
       renderer.domElement.style.cursor = "grabbing";
     };
     const onPointerUp = (event: PointerEvent) => {
-      renderer.domElement.style.cursor = caseIsHit(event.clientX, event.clientY)
-        ? "pointer"
-        : "grab";
+      renderer.domElement.style.cursor = "";
       interacting = false;
     };
     const onCanvasClick = (event: MouseEvent) => {
