@@ -25,7 +25,7 @@ const contributionDays = Array.from({ length: 364 }, (_, index) => {
 
 export default function Home() {
   const { isSignedIn } = useAuth();
-  const { soundEnabled, setSoundEnabled, playSound } = useSceneSound();
+  const { soundEnabled, setSoundEnabled, playSound, primeMusic, startMusic } = useSceneSound();
   const [openSourceWorld, setOpenSourceWorld] = useState(false);
   const [revealPhase, setRevealPhase] = useState<
     "initial" | "initial-opening" | "closed" | "explore-covering" | "explore-opening"
@@ -36,9 +36,15 @@ export default function Home() {
   }, []);
 
   const handleExplore = useCallback(() => {
+    primeMusic();
     playSound("paperCover");
     setRevealPhase("explore-covering");
-  }, [playSound]);
+  }, [playSound, primeMusic]);
+
+  const finishReveal = useCallback(() => {
+    if (revealPhase === "explore-opening") startMusic();
+    setRevealPhase("closed");
+  }, [revealPhase, startMusic]);
 
   useEffect(() => {
     if (revealPhase !== "initial") return;
@@ -119,13 +125,13 @@ export default function Home() {
       {revealPhase !== "closed" && revealPhase !== "initial" && (
         <SceneRevealLoader
           phase={revealPhase === "explore-covering" ? "covering" : "opening"}
-          onAnimationEnd={() => setRevealPhase("closed")}
+          onAnimationEnd={finishReveal}
         />
       )}
       {revealPhase === "initial" && (
         <SceneRevealLoader
           phase="covering"
-          onAnimationEnd={() => setRevealPhase("closed")}
+          onAnimationEnd={finishReveal}
         />
       )}
       <section id="landing-game" className="landing-world relative h-dvh overflow-hidden">
@@ -146,6 +152,15 @@ export default function Home() {
           <span>The Scene</span>
         </Link>
         <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            aria-pressed={soundEnabled}
+            onClick={() => setSoundEnabled(!soundEnabled)}
+          >
+            {soundEnabled ? "Sound on" : "Sound off"}
+          </Button>
           <Link
             href="https://github.com/austinskhosana/the-scene"
             target="_blank"

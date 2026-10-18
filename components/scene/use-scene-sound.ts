@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const SOUND_STORAGE_KEY = "the-scene-sound";
+const MUSIC_SOURCE = "/game/the-scene/shortcuts.ogg";
+const MUSIC_VOLUME = 0.18;
 
 export type SceneSound =
   | "caseOpen"
@@ -177,6 +179,8 @@ export function useSceneSound() {
   const soundEnabledRef = useRef(false);
   const contextRef = useRef<AudioContext | null>(null);
   const masterRef = useRef<GainNode | null>(null);
+  const musicRef = useRef<HTMLAudioElement | null>(null);
+  const musicReadyRef = useRef(false);
 
   const getAudio = useCallback(() => {
     let context = contextRef.current;
@@ -204,6 +208,47 @@ export function useSceneSound() {
     [getAudio],
   );
 
+  const getMusic = useCallback(() => {
+    if (!musicRef.current) {
+      const music = new Audio(MUSIC_SOURCE);
+      music.loop = true;
+      music.preload = "auto";
+      music.volume = MUSIC_VOLUME;
+      musicRef.current = music;
+    }
+
+    return musicRef.current;
+  }, []);
+
+  const playMusic = useCallback((music: HTMLAudioElement) => {
+    void music.play().catch(() => {
+      // A later sound-control click can retry if the browser blocks autoplay.
+    });
+  }, []);
+
+  const primeMusic = useCallback(() => {
+    if (!soundEnabledRef.current) return;
+
+    const music = getMusic();
+    music.currentTime = 0;
+    music.muted = true;
+    playMusic(music);
+  }, [getMusic, playMusic]);
+
+  const startMusic = useCallback(() => {
+    musicReadyRef.current = true;
+    const music = getMusic();
+    music.currentTime = 0;
+    music.muted = false;
+
+    if (!soundEnabledRef.current || document.visibilityState === "hidden") {
+      music.pause();
+      return;
+    }
+
+    playMusic(music);
+  }, [getMusic, playMusic]);
+
   const setSoundEnabled = useCallback(
     (enabled: boolean) => {
       soundEnabledRef.current = enabled;
@@ -217,8 +262,16 @@ export function useSceneSound() {
 
       const { context, master } = getAudio();
       renderSound(context, master, enabled ? "enabled" : "disabled");
+
+      const music = getMusic();
+      music.muted = false;
+      if (enabled && musicReadyRef.current && document.visibilityState !== "hidden") {
+        playMusic(music);
+      } else if (!enabled) {
+        music.pause();
+      }
     },
-    [getAudio],
+    [getAudio, getMusic, playMusic],
   );
 
   useEffect(() => {
@@ -230,13 +283,41 @@ export function useSceneSound() {
       soundEnabledRef.current = false;
     }
 
+    const handleVisibilityChange = () => {
+      const music = musicRef.current;
+      if (!music) return;
+
+      if (
+        document.visibilityState === "visible" &&
+        soundEnabledRef.current &&
+        musicReadyRef.current
+      ) {
+        music.muted = false;
+        playMusic(music);
+      } else {
+        music.pause();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+
       const context = contextRef.current;
       if (context && context.state !== "closed") void context.close();
       contextRef.current = null;
       masterRef.current = null;
-    };
-  }, []);
 
-  return { soundEnabled, setSoundEnabled, playSound };
+      const music = musicRef.current;
+      if (music) {
+        music.pause();
+        music.removeAttribute("src");
+        music.load();
+      }
+      musicRef.current = null;
+    };
+  }, [playMusic]);
+
+  return { soundEnabled, setSoundEnabled, playSound, primeMusic, startMusic };
 }
