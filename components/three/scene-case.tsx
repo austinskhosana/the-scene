@@ -77,6 +77,7 @@ export function GameCaseScene({
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.055;
+    controls.cursorStyle = "grab";
     controls.enablePan = false;
     controls.enableZoom = true;
     controls.rotateSpeed = 0.72;
@@ -659,10 +660,8 @@ export function GameCaseScene({
       interacting = true;
       dragged = false;
       pointerDownPosition.set(event.clientX, event.clientY);
-      renderer.domElement.style.cursor = "grabbing";
     };
-    const onPointerUp = (event: PointerEvent) => {
-      renderer.domElement.style.cursor = "";
+    const onPointerUp = () => {
       interacting = false;
     };
     const onCanvasClick = (event: MouseEvent) => {
