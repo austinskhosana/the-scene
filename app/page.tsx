@@ -9,7 +9,7 @@ import { LandingSoldier } from "@/components/game/landing-soldier";
 import { GameCaseScene } from "@/components/three/scene-case";
 import { SceneRevealLoader } from "@/components/scene/scene-reveal-loader";
 import { useSceneSound } from "@/components/scene/use-scene-sound";
-import { ArrowRight, CircleDash, Icon, LogoGithub, VideoGame } from "@/components/lime/icon";
+import { ArrowRight, CircleDash, Icon, LogoGithub, VideoGame, VolumeMute, VolumeUp } from "@/components/lime/icon";
 import { cn } from "@/lib/lime/utils";
 
 const contributionLevelClass = ["bg-surface-3", "bg-surface-3", "bg-accent-line", "bg-accent"];
@@ -25,8 +25,16 @@ const contributionDays = Array.from({ length: 364 }, (_, index) => {
 
 export default function Home() {
   const { isSignedIn } = useAuth();
-  const { soundEnabled, setSoundEnabled, playSound, primeMusic, startMusic } = useSceneSound();
+  const {
+    soundEnabled,
+    setSoundEnabled,
+    playSound,
+    primeMusic,
+    startMusic,
+    stopMusic,
+  } = useSceneSound();
   const [openSourceWorld, setOpenSourceWorld] = useState(false);
+  const [initialDestination, setInitialDestination] = useState<"cover" | "landing">("cover");
   const [revealPhase, setRevealPhase] = useState<
     "initial" | "initial-opening" | "closed" | "explore-covering" | "explore-opening"
   >("initial");
@@ -38,16 +46,34 @@ export default function Home() {
   const handleExplore = useCallback(() => {
     primeMusic();
     playSound("paperCover");
+    window.history.replaceState(null, "", "#landing-game");
     setRevealPhase("explore-covering");
   }, [playSound, primeMusic]);
 
+  const handleReturnToCover = useCallback(() => {
+    stopMusic();
+    window.history.replaceState(null, "", "#case-cover");
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [stopMusic]);
+
   const finishReveal = useCallback(() => {
-    if (revealPhase === "explore-opening") startMusic();
+    const isLandingReveal =
+      revealPhase === "explore-opening" ||
+      (revealPhase === "initial-opening" && initialDestination === "landing");
+    if (isLandingReveal) startMusic();
     setRevealPhase("closed");
-  }, [revealPhase, startMusic]);
+  }, [initialDestination, revealPhase, startMusic]);
 
   useEffect(() => {
     if (revealPhase !== "initial") return;
+
+    if (window.location.hash === "#landing-game") {
+      const landingGame = document.getElementById("landing-game");
+      if (landingGame) {
+        setInitialDestination("landing");
+        window.scrollTo({ top: landingGame.offsetTop, behavior: "auto" });
+      }
+    }
 
     const timer = window.setTimeout(() => {
       setRevealPhase("initial-opening");
@@ -113,7 +139,7 @@ export default function Home() {
 
   return (
     <main className="relative isolate flex min-h-dvh flex-col overflow-x-clip bg-page text-fg">
-      <section className="case-hero" aria-labelledby="case-hero-title">
+      <section id="case-cover" className="case-hero" aria-labelledby="case-hero-title">
         <h1 id="case-hero-title" className="sr-only">The Scene interactive game case</h1>
         <GameCaseScene
           onExplore={handleExplore}
@@ -147,7 +173,14 @@ export default function Home() {
         </div>
 
       <header className="relative z-30 mx-auto! flex h-16 w-full max-w-5xl shrink-0 items-center justify-between px-4 sm:px-6">
-        <Link href="/" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "px-2")}>
+        <Link
+          href="/#case-cover"
+          onClick={(event) => {
+            event.preventDefault();
+            handleReturnToCover();
+          }}
+          className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "px-2")}
+        >
           <Icon icon={CircleDash} size={20} />
           <span>The Scene</span>
         </Link>
@@ -159,7 +192,8 @@ export default function Home() {
             aria-pressed={soundEnabled}
             onClick={() => setSoundEnabled(!soundEnabled)}
           >
-            {soundEnabled ? "Sound on" : "Sound off"}
+            <Icon icon={soundEnabled ? VolumeUp : VolumeMute} size={16} />
+            <span>{soundEnabled ? "Sound on" : "Sound off"}</span>
           </Button>
           <Link
             href="https://github.com/austinskhosana/the-scene"

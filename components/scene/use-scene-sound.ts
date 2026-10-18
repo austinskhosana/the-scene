@@ -249,6 +249,16 @@ export function useSceneSound() {
     playMusic(music);
   }, [getMusic, playMusic]);
 
+  const stopMusic = useCallback(() => {
+    musicReadyRef.current = false;
+    const music = musicRef.current;
+    if (!music) return;
+
+    music.pause();
+    music.currentTime = 0;
+    music.muted = false;
+  }, []);
+
   const setSoundEnabled = useCallback(
     (enabled: boolean) => {
       soundEnabledRef.current = enabled;
@@ -319,5 +329,12 @@ export function useSceneSound() {
     };
   }, [playMusic]);
 
-  return { soundEnabled, setSoundEnabled, playSound, primeMusic, startMusic };
+  return {
+    soundEnabled,
+    setSoundEnabled,
+    playSound,
+    primeMusic,
+    startMusic,
+    stopMusic,
+  };
 }
