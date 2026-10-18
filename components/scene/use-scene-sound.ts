@@ -9,6 +9,8 @@ const MUSIC_VOLUME = 0.18;
 export type SceneSound =
   | "caseOpen"
   | "caseClose"
+  | "playerShoot"
+  | "ghostHit"
   | "menuHover"
   | "menuSelect"
   | "paperCover"
@@ -84,6 +86,43 @@ function addPaperNoise(
 }
 
 function renderSound(context: AudioContext, destination: AudioNode, sound: SceneSound | "enabled" | "disabled") {
+  if (sound === "playerShoot") {
+    addTone(context, destination, {
+      start: 980,
+      end: 180,
+      duration: 0.085,
+      gain: 0.075,
+      type: "square",
+    });
+    addTone(context, destination, {
+      start: 160,
+      end: 92,
+      duration: 0.11,
+      gain: 0.04,
+      type: "triangle",
+    });
+    return;
+  }
+
+  if (sound === "ghostHit") {
+    addTone(context, destination, {
+      start: 510,
+      end: 72,
+      duration: 0.2,
+      gain: 0.08,
+      type: "sawtooth",
+    });
+    addTone(context, destination, {
+      start: 1180,
+      end: 210,
+      duration: 0.13,
+      gain: 0.045,
+      delay: 0.025,
+      type: "square",
+    });
+    return;
+  }
+
   if (sound === "menuHover") {
     addTone(context, destination, {
       start: 760,

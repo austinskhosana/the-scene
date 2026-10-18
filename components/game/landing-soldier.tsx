@@ -10,8 +10,14 @@ import {
 import { cn } from "@/lib/lime/utils";
 import { GHOST_TRAIL_SYMBOLS, landingGameConfig } from "@/lib/game/landing-game-config";
 import { discoverGamePlatforms, type GamePlatformBounds, type GamePlatformName } from "@/lib/game/platforms";
+import type { SceneSound } from "@/components/scene/use-scene-sound";
 
-type LandingSoldierProps = { className?: string; onEnterPipe?: () => void; spawnOnGround?: boolean };
+type LandingSoldierProps = {
+  className?: string;
+  onEnterPipe?: () => void;
+  playSound?: (sound: SceneSound) => void;
+  spawnOnGround?: boolean;
+};
 type Surface = GamePlatformName | null;
 
 type PlatformBounds = GamePlatformBounds;
@@ -132,7 +138,7 @@ function loadArt() {
   ) as Record<TheSceneArtName, HTMLImageElement>;
 }
 
-export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }: LandingSoldierProps) {
+export function LandingSoldier({ className, onEnterPipe, playSound, spawnOnGround = false }: LandingSoldierProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<Record<TheSceneArtName, HTMLImageElement> | null>(null);
   const stateRef = useRef<PlayerState>(initialPlayerState());
@@ -162,12 +168,15 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
         }))
         .filter(({ distance }) => distance <= Math.max(GHOST_HIT_HALF_WIDTH, GHOST_HIT_HALF_HEIGHT))
         .sort((first, second) => first.distance - second.distance)[0];
-      if (target) target.ghost.hitAt = now;
+      if (target) {
+        target.ghost.hitAt = now;
+        playSound?.("ghostHit");
+      }
     };
 
     window.addEventListener("pointerdown", onPointerDown, { passive: true });
     return () => window.removeEventListener("pointerdown", onPointerDown);
-  }, []);
+  }, [playSound]);
 
   useEffect(() => {
     const images = loadArt();
@@ -432,6 +441,7 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
           velocityX: state.facing * 660,
           createdAt: time,
         });
+        playSound?.("playerShoot");
       }
       shootRequestedRef.current = false;
 
@@ -603,6 +613,7 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
         if (target) {
           target.hitAt = time;
           projectile.x = -100;
+          playSound?.("ghostHit");
         }
       }
       for (let index = ghostsRef.current.length - 1; index >= 0; index -= 1) {
@@ -803,7 +814,7 @@ export function LandingSoldier({ className, onEnterPipe, spawnOnGround = false }
       document.removeEventListener("visibilitychange", onVisibilityChange);
       observer.disconnect();
     };
-  }, [onEnterPipe, spawnOnGround]);
+  }, [onEnterPipe, playSound, spawnOnGround]);
 
   return (
     <canvas

@@ -167,7 +167,11 @@ export default function Home() {
         <div data-pipe-platform className="landing-pipe pointer-events-none absolute z-10">
           <img src="/game/the-scene/warp-pipe.png" alt="" aria-hidden="true" className="landing-pipe-image" />
         </div>
-        <LandingSoldier className="absolute inset-x-0 top-0 z-20 h-dvh" onEnterPipe={enterPipe} />
+        <LandingSoldier
+          className="absolute inset-x-0 top-0 z-20 h-dvh"
+          onEnterPipe={enterPipe}
+          playSound={playSound}
+        />
         <div aria-hidden="true" className="landing-pipe pointer-events-none absolute z-30">
           <img src="/game/the-scene/warp-pipe.png" alt="" className="landing-pipe-image" />
         </div>
@@ -312,7 +316,11 @@ export default function Home() {
             />
           </Button>
           <>
-            <LandingSoldier spawnOnGround className="absolute inset-x-0 bottom-0 z-60 h-full" />
+            <LandingSoldier
+              spawnOnGround
+              className="absolute inset-x-0 bottom-0 z-60 h-full"
+              playSound={playSound}
+            />
             <div className="relative z-20 flex max-w-md flex-col items-center gap-4 text-center">
               <Icon icon={LogoGithub} size={32} className="text-fg" />
               <h2 id="open-source-title" className="font-pixel-square text-2xl leading-tight tracking-tight sm:text-3xl">
