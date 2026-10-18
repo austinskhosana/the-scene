@@ -26,7 +26,12 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "The Scene — Build a human replying habit",
       description: "Show up consistently on X and build genuine relationships without bots.",
       type: "website",
-      images: [{ url: imageUrl, width: 1670, height: 941, alt: "The Scene — Do the work. Let the results compound." }],
+      images: [{
+        url: imageUrl,
+        width: 1200,
+        height: 627,
+        alt: "The Scene — You can't sit with us.",
+      }],
     },
     twitter: {
       card: "summary_large_image",
