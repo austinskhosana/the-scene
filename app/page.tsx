@@ -9,7 +9,7 @@ import { LandingSoldier } from "@/components/game/landing-soldier";
 import { GameCaseScene } from "@/components/three/scene-case";
 import { SceneRevealLoader } from "@/components/scene/scene-reveal-loader";
 import { useSceneSound } from "@/components/scene/use-scene-sound";
-import { ArrowRight, CircleDash, Icon, LogoGithub, VideoGame, VolumeMute, VolumeUp } from "@/components/lime/icon";
+import { ArrowRight, CircleDash, Icon, LogoGithub, VideoGame, VolumeMuteFilled, VolumeUpFilled } from "@/components/lime/icon";
 import { cn } from "@/lib/lime/utils";
 
 const contributionLevelClass = ["bg-surface-3", "bg-surface-3", "bg-accent-line", "bg-accent"];
@@ -192,7 +192,7 @@ export default function Home() {
             aria-pressed={soundEnabled}
             onClick={() => setSoundEnabled(!soundEnabled)}
           >
-            <Icon icon={soundEnabled ? VolumeUp : VolumeMute} size={16} />
+            <Icon icon={soundEnabled ? VolumeUpFilled : VolumeMuteFilled} size={16} />
             <span>{soundEnabled ? "Sound on" : "Sound off"}</span>
           </Button>
           <Link
