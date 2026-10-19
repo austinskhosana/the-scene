@@ -9,7 +9,9 @@ type ActivityPayload = {
 };
 
 function isDate(value: string) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
 async function getClerkUserId(request: Request) {
@@ -112,9 +114,14 @@ export async function GET(request: Request) {
   const clerkUserId = await getClerkUserId(request);
   if (!clerkUserId) return NextResponse.json({error: 'You must be signed in.'}, {status: 401});
 
+  const activityDate = new URL(request.url).searchParams.get('date');
+  if (!activityDate || !isDate(activityDate)) {
+    return NextResponse.json({error: 'A valid activity date is required.'}, {status: 400});
+  }
+
   const supabase = createSupabaseAdminClient();
   const [activityResult, streakResult] = await Promise.all([
-    supabase.from('daily_activity').select('replies_count, posts_count').eq('clerk_user_id', clerkUserId).eq('activity_date', '2026-10-07').maybeSingle(),
+    supabase.from('daily_activity').select('replies_count, posts_count').eq('clerk_user_id', clerkUserId).eq('activity_date', activityDate).maybeSingle(),
     supabase.from('streaks').select('current_streak, best_streak').eq('clerk_user_id', clerkUserId).maybeSingle(),
   ]);
   if (activityResult.error) return NextResponse.json({error: activityResult.error.message}, {status: 500});

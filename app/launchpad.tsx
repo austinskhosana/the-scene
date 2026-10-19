@@ -21,8 +21,22 @@ type Targets = Record<GoalKey, number>;
 
 const INITIAL_GOALS: Goals = { replies: 0, posts: 0 };
 const INITIAL_TARGETS: Targets = { replies: 100, posts: 1 };
-const TODAY = "2026-10-07";
 const STORAGE_KEY = "launchpad-state-v5";
+
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function fullDateLabel(iso: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(`${iso}T12:00:00`));
+}
 
 const goalMeta: Record<GoalKey, { label: string; singular: string }> = {
   replies: { label: "Replies", singular: "reply" },
@@ -68,18 +82,19 @@ function celebrateDailyStreak() {
   frame();
 }
 
-function buildContributionDays(goals: Goals, targets: Targets) {
-  const start = new Date("2026-01-01T12:00:00Z");
-  const end = new Date("2026-12-31T12:00:00Z");
+function buildContributionDays(goals: Goals, targets: Targets, today: string) {
+  const year = today.slice(0, 4);
+  const start = new Date(`${year}-01-01T12:00:00Z`);
+  const end = new Date(`${year}-12-31T12:00:00Z`);
   const result = [];
 
   for (let cursor = new Date(start); cursor <= end; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
     const iso = cursor.toISOString().slice(0, 10);
-    const future = iso > TODAY;
+    const future = iso > today;
     let replies = 0;
     let posts = 0;
 
-    if (iso === TODAY) {
+    if (iso === today) {
       replies = goals.replies;
       posts = goals.posts;
     }
@@ -159,17 +174,18 @@ function ContributionDot({ level, interactive = false }: { level: number; intera
   );
 }
 
-function ContributionGraph({ goals, targets, streak }: { goals: Goals; targets: Targets; streak: number }) {
-  const days = useMemo(() => buildContributionDays(goals, targets), [goals, targets]);
+function ContributionGraph({ goals, targets, streak, today }: { goals: Goals; targets: Targets; streak: number; today: string }) {
+  const days = useMemo(() => buildContributionDays(goals, targets, today), [goals, targets, today]);
   const completeDays = days.filter((day) => day.complete).length;
   const totalReplies = days.reduce((total, day) => total + day.replies, 0);
+  const year = today.slice(0, 4);
 
   return (
     <section aria-labelledby="contribution-title" className="flex flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h2 id="contribution-title" className="text-lg font-normal leading-tight">{streak} day streak</h2>
-          <p className="text-sm text-fg-3">{completeDays} complete {completeDays === 1 ? "day" : "days"} in 2026</p>
+          <p className="text-sm text-fg-3">{completeDays} complete {completeDays === 1 ? "day" : "days"} in {year}</p>
         </div>
         <div className="flex gap-5 text-end">
           <p className="text-sm text-fg-3"><span className="block font-normal text-fg tabular-nums">{streak}</span>Best</p>
@@ -183,7 +199,7 @@ function ContributionGraph({ goals, targets, streak }: { goals: Goals; targets: 
           </div>
           <div className="overflow-x-auto px-1 py-1 pb-3">
             <TooltipProvider delay={250}>
-              <div className="grid min-w-max grid-flow-col grid-rows-7 gap-1" role="grid" aria-label="2026 daily distribution history">
+              <div className="grid min-w-max grid-flow-col grid-rows-7 gap-1" role="grid" aria-label={`${year} daily distribution history`}>
                 {days.map((day) => {
                   const status = day.complete ? "Goals complete" : day.future ? "No activity yet" : `${day.percentage}% complete`;
                   const postLabel = `${day.posts} ${day.posts === 1 ? "post" : "posts"}`;
@@ -221,10 +237,12 @@ function ContributionGraph({ goals, targets, streak }: { goals: Goals; targets: 
 function TodayView({
   goals,
   targets,
+  today,
   onSave,
 }: {
   goals: Goals;
   targets: Targets;
+  today: string;
   onSave: (goals: Goals) => Promise<void>;
 }) {
   const [draftGoals, setDraftGoals] = useState(goals);
@@ -242,10 +260,10 @@ function TodayView({
     <section aria-label="Today" className="flex w-full max-w-2xl flex-col gap-7">
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="font-pixel-square text-3xl font-normal leading-tight tracking-tight">Good morning, Austin</h1>
-        <p className="text-base text-fg-2">Wednesday, October 7</p>
+        <p className="text-base text-fg-2">{fullDateLabel(today)}</p>
       </div>
 
-      <ContributionGraph goals={draftGoals} targets={targets} streak={streak} />
+      <ContributionGraph goals={draftGoals} targets={targets} streak={streak} today={today} />
 
       <section aria-labelledby="goals-title" className="flex flex-col gap-3">
         <div className="flex items-end justify-between gap-4">
@@ -367,10 +385,40 @@ function SettingsView({
 
 export default function Launchpad() {
   const [view, setView] = useState<View>("Today");
+  const [today, setToday] = useState(() => localDateKey());
   const [goals, setGoals] = useState<Goals>(INITIAL_GOALS);
   const [targets, setTargets] = useState<Targets>(INITIAL_TARGETS);
   const [dark, setDark] = useState(false);
   const hydrated = useRef(false);
+  const activityReadyForDate = useRef<string | null>(null);
+
+  useEffect(() => {
+    let midnightTimer = 0;
+
+    const scheduleDayCheck = () => {
+      window.clearTimeout(midnightTimer);
+      const now = new Date();
+      const nextDay = new Date(now);
+      nextDay.setHours(24, 0, 0, 100);
+      midnightTimer = window.setTimeout(() => {
+        setToday(localDateKey());
+        scheduleDayCheck();
+      }, nextDay.getTime() - now.getTime());
+    };
+    const refreshDay = () => setToday(localDateKey());
+    const refreshVisibleDay = () => {
+      if (document.visibilityState === "visible") refreshDay();
+    };
+
+    scheduleDayCheck();
+    window.addEventListener("focus", refreshDay);
+    document.addEventListener("visibilitychange", refreshVisibleDay);
+    return () => {
+      window.clearTimeout(midnightTimer);
+      window.removeEventListener("focus", refreshDay);
+      document.removeEventListener("visibilitychange", refreshVisibleDay);
+    };
+  }, []);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -378,42 +426,70 @@ export default function Launchpad() {
       try {
         const parsed = JSON.parse(stored);
         queueMicrotask(() => {
-          if (parsed.goals) setGoals(parsed.goals);
           if (parsed.targets) setTargets(parsed.targets);
           if (typeof parsed.dark === "boolean") setDark(parsed.dark);
+          hydrated.current = true;
         });
       } catch {
         // Keep the seeded local state when stored data is invalid.
+        hydrated.current = true;
+      }
+    } else {
+      hydrated.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    let fallbackGoals = INITIAL_GOALS;
+    activityReadyForDate.current = null;
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.activityDate === today && parsed.goals) fallbackGoals = parsed.goals;
+      } catch {
+        // Use a fresh count when the local fallback cannot be read.
       }
     }
-    hydrated.current = true;
-    void fetch("/api/activity", { cache: "no-store" })
+    queueMicrotask(() => {
+      if (!active) return;
+      activityReadyForDate.current = today;
+      setGoals(fallbackGoals);
+    });
+
+    void fetch(`/api/activity?date=${encodeURIComponent(today)}`, { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) return null;
         return response.json() as Promise<{ hasActivity?: boolean; activity?: { replies_count: number; posts_count: number } }>;
       })
       .then((result) => {
-        if (!result?.hasActivity || !result.activity) return;
+        if (!active || !result?.activity) return;
+        activityReadyForDate.current = today;
         setGoals({ replies: result.activity.replies_count, posts: result.activity.posts_count });
       })
       .catch(() => {
         // Keep local state when the activity request is unavailable.
       });
-  }, []);
+
+    return () => {
+      active = false;
+    };
+  }, [today]);
 
   useEffect(() => {
     document.body.dataset.theme = dark ? "dark" : "light";
-    if (hydrated.current) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ goals, targets, dark }));
+    if (hydrated.current && activityReadyForDate.current === today) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ activityDate: today, goals, targets, dark }));
     }
-  }, [dark, goals, targets]);
+  }, [dark, goals, targets, today]);
 
   const saveGoals = async (nextGoals: Goals) => {
     const response = await fetch("/api/activity", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        activityDate: TODAY,
+        activityDate: today,
         repliesCount: nextGoals.replies,
         postsCount: nextGoals.posts,
       }),
@@ -460,6 +536,7 @@ export default function Launchpad() {
           <TodayView
             goals={goals}
             targets={targets}
+            today={today}
             onSave={saveGoals}
           />
         ) : (
